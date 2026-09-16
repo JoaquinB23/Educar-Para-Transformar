@@ -1,5 +1,8 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const { db } = require("./firebaseAdmin");
+const verifyToken = require("./middleware/verifyToken");
 
 const app = express();
 const PORT = process.env.PORT || 3000 || 5500;
@@ -13,7 +16,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('../'));
 
-// ─── DATOS DE EJEMPLO EN MEMORIA ────────────────────────────────────────────
+// ─── DATOS DE EJEMPLO EN MEMORIA (alumnos/docentes/materias/inscripciones) ──
+// Nota: estos siguen mock por ahora. Migrarlos a Firestore es un paso aparte
+// si querés persistencia real de estos datos también.
 
 let alumnos = [
   { id: 1, legajo: "A001", nombre: "Lucas", apellido: "Fernández", email: "lucas.fernandez@mail.com", estado: "activo" },
@@ -46,9 +51,52 @@ const nextId = (arr) => (arr.length === 0 ? 1 : Math.max(...arr.map((x) => x.id)
 const ok   = (res, data, status = 200) => res.status(status).json({ ok: true,  data });
 const fail = (res, msg,  status = 400) => res.status(status).json({ ok: false, error: msg });
 
+// ─── AUTH (Firebase) ────────────────────────────────────────────────────────
+// El login en sí ya no pasa por el backend: se hace 100% en el cliente con
+// Firebase Auth (signInWithEmailAndPassword). El backend solo:
+//   1) verifica el ID Token en cada request protegida (middleware verifyToken)
+//   2) guarda/lee el perfil (rol, nivel, nombre) en Firestore
+
+// POST /api/auth/sync
+// Se llama una vez después del login/registro en el cliente para crear o
+// actualizar el documento de perfil del usuario en Firestore.
+app.post("/api/auth/sync", verifyToken, async (req, res) => {
+  try {
+    const { rol, nivel, nombre } = req.body;
+    if (!rol) return fail(res, "Falta el campo rol");
+
+    const userRef = db.collection("usuarios").doc(req.user.uid);
+    const data = {
+      uid: req.user.uid,
+      email: req.user.email,
+      rol,
+      nivel: nivel || null,
+      nombre: nombre || null,
+      actualizadoEn: new Date().toISOString(),
+    };
+
+    await userRef.set(data, { merge: true });
+    ok(res, data);
+  } catch (err) {
+    fail(res, "Error al sincronizar el perfil: " + err.message, 500);
+  }
+});
+
+// GET /api/auth/me
+// Devuelve el perfil del usuario autenticado (a partir del token verificado).
+app.get("/api/auth/me", verifyToken, async (req, res) => {
+  try {
+    const snap = await db.collection("usuarios").doc(req.user.uid).get();
+    if (!snap.exists) return fail(res, "Perfil no encontrado en Firestore", 404);
+    ok(res, snap.data());
+  } catch (err) {
+    fail(res, "Error al leer el perfil: " + err.message, 500);
+  }
+});
+
 // ─── DASHBOARD ──────────────────────────────────────────────────────────────
 
-app.get("/api/dashboard", (req, res) => {
+app.get("/api/dashboard", verifyToken, (req, res) => {
   const cicloActual = 2025;
   ok(res, {
     alumnosActivos:         alumnos.filter((a) => a.estado === "activo").length,
@@ -60,8 +108,7 @@ app.get("/api/dashboard", (req, res) => {
 
 // ─── ALUMNOS ────────────────────────────────────────────────────────────────
 
-// GET /api/alumnos?nombre=&estado=
-app.get("/api/alumnos", (req, res) => {
+app.get("/api/alumnos", verifyToken, (req, res) => {
   let resultado = [...alumnos];
   if (req.query.nombre) {
     const q = req.query.nombre.toLowerCase();
@@ -75,15 +122,13 @@ app.get("/api/alumnos", (req, res) => {
   ok(res, resultado);
 });
 
-// GET /api/alumnos/:id
-app.get("/api/alumnos/:id", (req, res) => {
+app.get("/api/alumnos/:id", verifyToken, (req, res) => {
   const alumno = alumnos.find((a) => a.id === Number(req.params.id));
   if (!alumno) return fail(res, "Alumno no encontrado", 404);
   ok(res, alumno);
 });
 
-// POST /api/alumnos
-app.post("/api/alumnos", (req, res) => {
+app.post("/api/alumnos", verifyToken, (req, res) => {
   const { legajo, nombre, apellido, email, estado = "activo" } = req.body;
   if (!legajo || !nombre || !apellido || !email)
     return fail(res, "Faltan campos obligatorios: legajo, nombre, apellido, email");
@@ -94,16 +139,14 @@ app.post("/api/alumnos", (req, res) => {
   ok(res, nuevo, 201);
 });
 
-// PUT /api/alumnos/:id
-app.put("/api/alumnos/:id", (req, res) => {
+app.put("/api/alumnos/:id", verifyToken, (req, res) => {
   const idx = alumnos.findIndex((a) => a.id === Number(req.params.id));
   if (idx === -1) return fail(res, "Alumno no encontrado", 404);
   alumnos[idx] = { ...alumnos[idx], ...req.body, id: alumnos[idx].id };
   ok(res, alumnos[idx]);
 });
 
-// DELETE /api/alumnos/:id
-app.delete("/api/alumnos/:id", (req, res) => {
+app.delete("/api/alumnos/:id", verifyToken, (req, res) => {
   const idx = alumnos.findIndex((a) => a.id === Number(req.params.id));
   if (idx === -1) return fail(res, "Alumno no encontrado", 404);
   const eliminado = alumnos.splice(idx, 1)[0];
@@ -112,7 +155,7 @@ app.delete("/api/alumnos/:id", (req, res) => {
 
 // ─── DOCENTES ───────────────────────────────────────────────────────────────
 
-app.get("/api/docentes", (req, res) => {
+app.get("/api/docentes", verifyToken, (req, res) => {
   let resultado = [...docentes];
   if (req.query.nombre) {
     const q = req.query.nombre.toLowerCase();
@@ -126,13 +169,13 @@ app.get("/api/docentes", (req, res) => {
   ok(res, resultado);
 });
 
-app.get("/api/docentes/:id", (req, res) => {
+app.get("/api/docentes/:id", verifyToken, (req, res) => {
   const docente = docentes.find((d) => d.id === Number(req.params.id));
   if (!docente) return fail(res, "Docente no encontrado", 404);
   ok(res, docente);
 });
 
-app.post("/api/docentes", (req, res) => {
+app.post("/api/docentes", verifyToken, (req, res) => {
   const { legajo, nombre, apellido, email, materiasACargo = [], estado = "activo" } = req.body;
   if (!legajo || !nombre || !apellido || !email)
     return fail(res, "Faltan campos obligatorios: legajo, nombre, apellido, email");
@@ -143,14 +186,14 @@ app.post("/api/docentes", (req, res) => {
   ok(res, nuevo, 201);
 });
 
-app.put("/api/docentes/:id", (req, res) => {
+app.put("/api/docentes/:id", verifyToken, (req, res) => {
   const idx = docentes.findIndex((d) => d.id === Number(req.params.id));
   if (idx === -1) return fail(res, "Docente no encontrado", 404);
   docentes[idx] = { ...docentes[idx], ...req.body, id: docentes[idx].id };
   ok(res, docentes[idx]);
 });
 
-app.delete("/api/docentes/:id", (req, res) => {
+app.delete("/api/docentes/:id", verifyToken, (req, res) => {
   const idx = docentes.findIndex((d) => d.id === Number(req.params.id));
   if (idx === -1) return fail(res, "Docente no encontrado", 404);
   const eliminado = docentes.splice(idx, 1)[0];
@@ -159,7 +202,7 @@ app.delete("/api/docentes/:id", (req, res) => {
 
 // ─── MATERIAS ───────────────────────────────────────────────────────────────
 
-app.get("/api/materias", (req, res) => {
+app.get("/api/materias", verifyToken, (req, res) => {
   let resultado = [...materias];
   if (req.query.nombre) {
     const q = req.query.nombre.toLowerCase();
@@ -171,13 +214,13 @@ app.get("/api/materias", (req, res) => {
   ok(res, resultado);
 });
 
-app.get("/api/materias/:id", (req, res) => {
+app.get("/api/materias/:id", verifyToken, (req, res) => {
   const materia = materias.find((m) => m.id === Number(req.params.id));
   if (!materia) return fail(res, "Materia no encontrada", 404);
   ok(res, materia);
 });
 
-app.post("/api/materias", (req, res) => {
+app.post("/api/materias", verifyToken, (req, res) => {
   const { codigo, nombre, cargaHoraria, cicloLectivo, docenteId } = req.body;
   if (!codigo || !nombre || !cargaHoraria || !cicloLectivo)
     return fail(res, "Faltan campos obligatorios: codigo, nombre, cargaHoraria, cicloLectivo");
@@ -188,14 +231,14 @@ app.post("/api/materias", (req, res) => {
   ok(res, nuevo, 201);
 });
 
-app.put("/api/materias/:id", (req, res) => {
+app.put("/api/materias/:id", verifyToken, (req, res) => {
   const idx = materias.findIndex((m) => m.id === Number(req.params.id));
   if (idx === -1) return fail(res, "Materia no encontrada", 404);
   materias[idx] = { ...materias[idx], ...req.body, id: materias[idx].id };
   ok(res, materias[idx]);
 });
 
-app.delete("/api/materias/:id", (req, res) => {
+app.delete("/api/materias/:id", verifyToken, (req, res) => {
   const idx = materias.findIndex((m) => m.id === Number(req.params.id));
   if (idx === -1) return fail(res, "Materia no encontrada", 404);
   const eliminada = materias.splice(idx, 1)[0];
@@ -204,7 +247,7 @@ app.delete("/api/materias/:id", (req, res) => {
 
 // ─── INSCRIPCIONES ──────────────────────────────────────────────────────────
 
-app.get("/api/inscripciones", (req, res) => {
+app.get("/api/inscripciones", verifyToken, (req, res) => {
   let resultado = [...inscripciones];
   if (req.query.alumnoId)
     resultado = resultado.filter((i) => i.alumnoId === Number(req.query.alumnoId));
@@ -215,13 +258,13 @@ app.get("/api/inscripciones", (req, res) => {
   ok(res, resultado);
 });
 
-app.get("/api/inscripciones/:id", (req, res) => {
+app.get("/api/inscripciones/:id", verifyToken, (req, res) => {
   const ins = inscripciones.find((i) => i.id === Number(req.params.id));
   if (!ins) return fail(res, "Inscripción no encontrada", 404);
   ok(res, ins);
 });
 
-app.post("/api/inscripciones", (req, res) => {
+app.post("/api/inscripciones", verifyToken, (req, res) => {
   const { alumnoId, materiaId, cicloLectivo, estado = "cursando" } = req.body;
   if (!alumnoId || !materiaId || !cicloLectivo)
     return fail(res, "Faltan campos obligatorios: alumnoId, materiaId, cicloLectivo");
@@ -238,70 +281,31 @@ app.post("/api/inscripciones", (req, res) => {
   ok(res, nueva, 201);
 });
 
-app.delete("/api/inscripciones/:id", (req, res) => {
+app.delete("/api/inscripciones/:id", verifyToken, (req, res) => {
   const idx = inscripciones.findIndex((i) => i.id === Number(req.params.id));
   if (idx === -1) return fail(res, "Inscripción no encontrada", 404);
   const eliminada = inscripciones.splice(idx, 1)[0];
   ok(res, { mensaje: "Inscripción eliminada", inscripcion: eliminada });
 });
 
-const sesionesActivas = new Set();
-
-// usuarios de prueba (después reemplazás con DB)
-const usuarios = [
-  { id: 1, dni: "12345678", password: "1234", rol: "alumno", nivel: "primaria", nombre: "Lucas" },
-  { id: 2, dni: "87654321", password: "1234", rol: "docente", nivel: "secundaria", nombre: "Ana" },
-  { id: 3, dni: "11111111", password: "1234", rol: "familia",  nombre: "Jose" }
-];
-
-app.post("/api/auth/login", (req, res) => {
-  const { dni, password, rol, nivel } = req.body;
-
-  const usuario = usuarios.find((u) => {
-    if (u.dni !== dni || u.password !== password || u.rol !== rol) return false;
-    if (rol === "familia") return true; // tutores no tienen nivel
-    return u.nivel === nivel;
-  });
-
-  if (!usuario) return fail(res, "Credenciales inválidas", 401);
-
-  if (sesionesActivas.has(dni)) {
-    return fail(res, "Este usuario ya tiene una sesión activa", 409);
-  }
-
-  sesionesActivas.add(dni);
-  ok(res, { usuario, mensaje: "Login exitoso" });
-});
-
-app.post("/api/auth/logout", (req, res) => {
-  const { dni } = req.body;
-  if (!dni) return fail(res, "Falta el DNI");
-  sesionesActivas.delete(dni);
-  ok(res, { mensaje: "Sesión cerrada correctamente" });
-});
-
 // ─── 404 CATCH-ALL ──────────────────────────────────────────────────────────
 
 app.use((req, res) => fail(res, `Ruta no encontrada: ${req.method} ${req.path}`, 404));
-
-
-
-
-
-
 
 // ─── INICIO ─────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
   console.log(`\n NovaSYS API corriendo en http://localhost:${PORT}`);
   console.log("\nEndpoints disponibles:");
-  console.log("  GET    /api/dashboard");
-  console.log("  GET|POST              /api/alumnos");
-  console.log("  GET|PUT|DELETE        /api/alumnos/:id");
-  console.log("  GET|POST              /api/docentes");
-  console.log("  GET|PUT|DELETE        /api/docentes/:id");
-  console.log("  GET|POST              /api/materias");
-  console.log("  GET|PUT|DELETE        /api/materias/:id");
-  console.log("  GET|POST              /api/inscripciones");
-  console.log("  GET|DELETE            /api/inscripciones/:id\n");
+  console.log("  POST                   /api/auth/sync   (requiere Bearer token)");
+  console.log("  GET                    /api/auth/me     (requiere Bearer token)");
+  console.log("  GET                    /api/dashboard   (requiere Bearer token)");
+  console.log("  GET|POST               /api/alumnos");
+  console.log("  GET|PUT|DELETE         /api/alumnos/:id");
+  console.log("  GET|POST               /api/docentes");
+  console.log("  GET|PUT|DELETE         /api/docentes/:id");
+  console.log("  GET|POST               /api/materias");
+  console.log("  GET|PUT|DELETE         /api/materias/:id");
+  console.log("  GET|POST               /api/inscripciones");
+  console.log("  GET|DELETE             /api/inscripciones/:id\n");
 });
