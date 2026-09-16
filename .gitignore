@@ -1,0 +1,9 @@
+
+
+# Env — credenciales Firebase y secretos
+.env
+.env.local
+js/env.js
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
