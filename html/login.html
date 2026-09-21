@@ -220,6 +220,10 @@
                     return;
                 }
 
+                // NUEVO: guardamos el idToken para usarlo en los fetch al backend
+                const idToken = await cred.user.getIdToken();
+                sessionStorage.setItem('idToken', idToken);
+
                 localStorage.setItem('usuario', JSON.stringify({ uid: cred.user.uid, ...perfil }));
 
                 if (rol === 'alumno')  window.location.href = 'dashboard-alumno.html';

@@ -5,7 +5,7 @@ const { db } = require("./firebaseAdmin");
 const verifyToken = require("./middleware/verifyToken");
 
 const app = express();
-const PORT = process.env.PORT || 3000 || 5500;
+const PORT = process.env.PORT || 3000;
 
 // Configuración robusta de CORS
 app.use(cors({
