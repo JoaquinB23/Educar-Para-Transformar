@@ -280,19 +280,7 @@
 
 <!-- ===== SCRIPTS ===== -->
 <script>
-    // --- Sesión ---
-    const usuario = JSON.parse(sessionStorage.getItem('usuario'));
-    if (!usuario) {
-        window.location.href = 'login.html';
-    } else {
-        document.getElementById('txtBienvenida').innerText = `Bienvenido, Prof. ${usuario.nombre}`;
-        document.getElementById('txtNombreSidebar').innerText = usuario.nombre;
-        document.getElementById('navNombreDocente').innerText = usuario.nombre;
-        document.getElementById('perfilNombreCompleto').innerText = usuario.nombre;
-        document.getElementById('perfilRol').innerText = `Rol verificado: ${usuario.rol.toUpperCase()}`;
-    }
-
-    document.getElementById('btnCerrarSesionTop').addEventListener('click', () => window.cerrarSesion());
+    // La inicialización de la sesión y la UI se maneja en js/dashboard-docente.js
 
     // --- Filtro de alumnos por materia ---
     document.getElementById('filtroMateria').addEventListener('change', function () {
