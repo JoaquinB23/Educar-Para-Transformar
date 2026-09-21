@@ -281,7 +281,7 @@
 <!-- ===== SCRIPTS ===== -->
 <script>
     // --- Sesión ---
-    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    const usuario = JSON.parse(sessionStorage.getItem('usuario'));
     if (!usuario) {
         window.location.href = 'login.html';
     } else {
@@ -307,39 +307,6 @@
         alert(`Calificaciones del alumno ${legajo} — funcionalidad en desarrollo.`);
     }
 
-    // --- Guardar nota desde el modal ---
-    document.getElementById('btnGuardarNota').addEventListener('click', () => {
-        const alumno  = document.getElementById('modalAlumno').value;
-        const p1      = document.getElementById('modalParcial1').value;
-        const p2      = document.getElementById('modalParcial2').value;
-        const final   = document.getElementById('modalFinal').value;
-
-        // Actualiza la fila correspondiente en la tabla de calificaciones
-        const filas = document.querySelectorAll('#tablaCalificaciones tr');
-        filas.forEach(fila => {
-            if (fila.querySelector('td:first-child')?.innerText === alumno) {
-                if (p1)    fila.cells[3].innerText = p1;
-                if (p2)    fila.cells[4].innerText = p2;
-                if (final) fila.cells[5].innerText = final;
-
-                // Recalcula estado simple
-                const promedio = ((+p1 || 0) + (+p2 || 0)) / 2;
-                const badge    = fila.cells[6].querySelector('.badge');
-                if (promedio >= 6) {
-                    badge.className = 'badge bg-success-subtle text-success border border-success-subtle';
-                    badge.innerText = 'Regular';
-                } else if (promedio >= 4) {
-                    badge.className = 'badge bg-warning-subtle text-warning border border-warning-subtle';
-                    badge.innerText = 'Condicional';
-                } else {
-                    badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
-                    badge.innerText = 'Libre';
-                }
-            }
-        });
-
-        bootstrap.Modal.getInstance(document.getElementById('modalNota')).hide();
-    });
 </script>
 
 <script type="module" src="../js/auth-guard.js"></script>

@@ -1,17 +1,23 @@
 import { auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
+// Semáforo: los dashboards hacen `await window.authReady;` antes de su primer
+// fetch, así no salen a pedir datos antes de que Firebase confirme la sesión.
+let resolverAuthReady;
+window.authReady = new Promise((resolve) => { resolverAuthReady = resolve; });
+
 // Redirige al login si Firebase no tiene sesión activa
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     localStorage.removeItem('usuario');
     sessionStorage.removeItem('idToken');
+    resolverAuthReady(null);
     window.location.href = 'login.html';
     return;
   }
-  // Refrescamos el token guardado cada vez que se confirma la sesión (ej. al recargar la página)
   const idToken = await user.getIdToken();
   sessionStorage.setItem('idToken', idToken);
+  resolverAuthReady(user);
 });
 
 // Función global de logout: cierra sesión en Firebase + limpia todo
@@ -28,6 +34,8 @@ window.cerrarSesion = async () => {
 // Helper global para hacer fetch al backend con el token de Firebase.
 // Si el token venció (dura ~1h), lo refresca y reintenta una sola vez.
 window.fetchConAuth = async (url, options = {}) => {
+  await window.authReady; // esperamos a que Firebase confirme la sesión
+
   let token = sessionStorage.getItem('idToken');
 
   if (!token && auth.currentUser) {

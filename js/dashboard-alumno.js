@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnCerrar) btnCerrar.addEventListener('click', () => window.cerrarSesion());
 
     try {
+        await window.authReady;
         // 1. Perfil real desde el backend (más confiable que lo cacheado en localStorage)
         const respPerfil = await window.fetchConAuth('/api/auth/me');
         if (!respPerfil.ok) throw new Error('No se pudo cargar el perfil');

@@ -17,7 +17,7 @@ async function cargarAsistencias(alumnoId, container) {
     `;
 
     try {
-        const token = localStorage.getItem('token') || '';
+        const token = sessionStorage.getItem('idToken') || '';
         const response = await fetch(`/api/asistencias?alumnoId=${alumnoId}`, {
             headers: { 
                 'Authorization': `Bearer ${token}` 
