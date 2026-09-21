@@ -386,9 +386,6 @@ app.delete("/api/inscripciones/:id", verifyToken, async (req, res) => {
   }
 });
 
-// ─── 404 CATCH-ALL ──────────────────────────────────────────────────────────
-
-app.use((req, res) => fail(res, `Ruta no encontrada: ${req.method} ${req.path}`, 404));
 
 // ─── ASISTENCIAS ────────────────────────────────────────────────────────────
 
@@ -460,6 +457,10 @@ app.post("/api/asistencias", verifyToken, async (req, res) => {
     fail(res, "Error al guardar la asistencia: " + err.message, 500);
   }
 });
+
+// ─── 404 CATCH-ALL ──────────────────────────────────────────────────────────
+
+app.use((req, res) => fail(res, `Ruta no encontrada: ${req.method} ${req.path}`, 404));
 
 // ─── INICIO ─────────────────────────────────────────────────────────────────
 

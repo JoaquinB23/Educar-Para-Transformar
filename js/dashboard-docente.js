@@ -104,7 +104,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             // pre-marcar los estados en vez de arrancar de cero
             const fecha = fechaInput.value;
             const respExistente = await window.fetchConAuth(`/api/asistencias?materiaId=${materiaId}&fecha=${fecha}`);
-            const { data: asistenciasExistentes } = await respExistente.json();
+            let asistenciasExistentes = [];
+            if (respExistente.ok) {
+                const result = await respExistente.json();
+                if (result.data) asistenciasExistentes = result.data;
+            }
+            
             const estadoPrevio = {};
             asistenciasExistentes.forEach((a) => { estadoPrevio[a.alumnoId] = a.estado; });
 
