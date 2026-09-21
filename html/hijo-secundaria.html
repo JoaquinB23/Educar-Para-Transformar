@@ -130,7 +130,7 @@
                             <h5 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
                                 <span class="material-symbols-outlined text-primary">calendar_month</span> Asistencias Recientes
                             </h5>
-                            <div id="asistencias-container" data-alumno-id="3aOoqqPAuJd4RLVE7JEu">
+                            <div id="asistencias-container">
                                 <!-- Se cargarán por JS -->
                             </div>
                         </div>
@@ -140,7 +140,27 @@
         </main>
     </div>
 </div>
+<script type="module" src="../js/auth-guard.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        await window.authReady;
+        try {
+            const resp = await window.fetchConAuth('/api/auth/me');
+            const { data: perfil } = await resp.json();
+            const alumnoId = perfil.hijoSecundariaId;
+            const container = document.getElementById('asistencias-container');
 
+            if (alumnoId && container) {
+                container.dataset.alumnoId = alumnoId;
+                window.cargarAsistencias(alumnoId, container);
+            } else if (container) {
+                container.innerHTML = '<p class="text-muted mt-3 mb-0">No tenés un hijo vinculado en este nivel.</p>';
+            }
+        } catch (err) {
+            console.error('Error resolviendo el hijo:', err);
+        }
+    });
+</script>
 <script src="../js/asistencias.js"></script>
 </body>
 </html>

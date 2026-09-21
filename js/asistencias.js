@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (alumnoId) {
             cargarAsistencias(alumnoId, container);
         }
+        // Si no hay alumnoId todavía (lo va a setear el script de la página
+        // después de resolver la sesión), no hacemos nada acá — se llama
+        // manualmente vía window.cargarAsistencias más abajo.
     }
 });
 
@@ -19,8 +22,8 @@ async function cargarAsistencias(alumnoId, container) {
     try {
         const token = sessionStorage.getItem('idToken') || '';
         const response = await fetch(`/api/asistencias?alumnoId=${alumnoId}`, {
-            headers: { 
-                'Authorization': `Bearer ${token}` 
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
         });
 
@@ -48,7 +51,6 @@ function renderAsistencias(asistencias, container) {
         return;
     }
 
-    // Ordenar por fecha descendente (más reciente primero)
     asistencias.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
     let html = `
@@ -68,7 +70,6 @@ function renderAsistencias(asistencias, container) {
         let icon = 'help';
         let estadoLabel = a.estado;
 
-        // Estilos según estado
         if (a.estado.toLowerCase() === 'presente') {
             badgeClass = 'bg-success-subtle text-success border border-success-subtle';
             icon = 'check_circle';
@@ -80,8 +81,7 @@ function renderAsistencias(asistencias, container) {
             icon = 'schedule';
         }
 
-        // Formatear la fecha para que sea legible (ej: Lun, 20 Sep)
-        const dateParts = a.fecha.split('-'); // asumiendo YYYY-MM-DD
+        const dateParts = a.fecha.split('-');
         const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
         const formattedDate = dateObj.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'short' });
 
@@ -90,7 +90,7 @@ function renderAsistencias(asistencias, container) {
                 <td class="fw-bold text-capitalize text-dark py-3">${formattedDate}</td>
                 <td class="py-3">
                     <span class="badge ${badgeClass} d-inline-flex align-items-center gap-1 px-3 py-2 rounded-pill shadow-sm">
-                        <span class="material-symbols-outlined fs-6">${icon}</span> 
+                        <span class="material-symbols-outlined fs-6">${icon}</span>
                         <span class="text-capitalize fw-bold">${estadoLabel}</span>
                     </span>
                 </td>
@@ -106,3 +106,7 @@ function renderAsistencias(asistencias, container) {
 
     container.innerHTML = html;
 }
+
+// Exponemos la función para que otros scripts (como el que resuelve
+// dinámicamente el alumnoId del tutor) puedan llamarla manualmente.
+window.cargarAsistencias = cargarAsistencias;
