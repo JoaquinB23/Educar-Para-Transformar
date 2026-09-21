@@ -17,56 +17,18 @@ async function cargarAsistencias(alumnoId, container) {
     `;
 
     try {
-        // En el futuro esto será el fetch real:
-        // const response = await fetch(`/api/asistencias?alumnoId=${alumnoId}`, {
-        //     headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-        // });
-        // const json = await response.json();
-        
-        // Simulando delay de red
-        await new Promise(resolve => setTimeout(resolve, 800));
+        const token = localStorage.getItem('token') || '';
+        const response = await fetch(`/api/asistencias?alumnoId=${alumnoId}`, {
+            headers: { 
+                'Authorization': `Bearer ${token}` 
+            }
+        });
 
-        // Datos de prueba (mock) basados en el contrato
-        const json = {
-            "ok": true,
-            "data": [
-                {
-                    "id": "abc123",
-                    "alumnoId": alumnoId,
-                    "materiaId": "xyz789",
-                    "fecha": "2026-09-20",
-                    "estado": "presente"
-                },
-                {
-                    "id": "abc124",
-                    "alumnoId": alumnoId,
-                    "materiaId": "xyz789",
-                    "fecha": "2026-09-19",
-                    "estado": "ausente"
-                },
-                {
-                    "id": "abc125",
-                    "alumnoId": alumnoId,
-                    "materiaId": "xyz789",
-                    "fecha": "2026-09-18",
-                    "estado": "presente"
-                },
-                {
-                    "id": "abc126",
-                    "alumnoId": alumnoId,
-                    "materiaId": "xyz789",
-                    "fecha": "2026-09-17",
-                    "estado": "presente"
-                },
-                {
-                    "id": "abc127",
-                    "alumnoId": alumnoId,
-                    "materiaId": "xyz789",
-                    "fecha": "2026-09-16",
-                    "estado": "presente"
-                }
-            ]
-        };
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const json = await response.json();
 
         if (json.ok && json.data) {
             renderAsistencias(json.data, container);
