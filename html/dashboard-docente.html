@@ -242,117 +242,41 @@
                     </div>
                 </section>
 
-                <!-- ===== SECCIÓN: Calificaciones ===== -->
-                <section id="seccionCalificaciones" class="mt-5">
-                    <div class="card card-dash p-4 bg-white shadow-sm border-0">
-                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                                <span class="material-symbols-outlined text-primary">grading</span> Gestión de Calificaciones
-                            </h5>
-                            <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#modalNota">
-                                <span class="material-symbols-outlined align-middle me-1" style="font-size:16px">add</span> Cargar Nota
-                            </button>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Legajo</th>
-                                        <th>Alumno</th>
-                                        <th>Materia</th>
-                                        <th>Parcial 1</th>
-                                        <th>Parcial 2</th>
-                                        <th>Final</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tablaCalificaciones">
-                                    <tr>
-                                        <td><code>A001</code></td>
-                                        <td class="fw-bold">García, Lucía</td>
-                                        <td>Programación I</td>
-                                        <td>8</td>
-                                        <td>9</td>
-                                        <td>—</td>
-                                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><code>A002</code></td>
-                                        <td class="fw-bold">López, Martín</td>
-                                        <td>Programación I</td>
-                                        <td>4</td>
-                                        <td>6</td>
-                                        <td>—</td>
-                                        <td><span class="badge bg-warning-subtle text-warning border border-warning-subtle">Condicional</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><code>A003</code></td>
-                                        <td class="fw-bold">Romero, Sofía</td>
-                                        <td>Programación II</td>
-                                        <td>10</td>
-                                        <td>9</td>
-                                        <td>—</td>
-                                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-            </div><!-- /p-4 p-md-5 -->
-        </main>
-    </div>
-</div>
-
-<!-- ===== MODAL: Cargar Nota ===== -->
-<div class="modal fade" id="modalNota" tabindex="-1" aria-labelledby="modalNotaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="modalNotaLabel">
-                    <span class="material-symbols-outlined align-middle me-1 text-primary">grading</span> Cargar Calificación
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Alumno</label>
-                    <select class="form-select" id="modalAlumno">
-                        <option value="A001">A001 — García, Lucía</option>
-                        <option value="A002">A002 — López, Martín</option>
-                        <option value="A003">A003 — Romero, Sofía</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Materia</label>
-                    <select class="form-select" id="modalMateriaSelect">
-                        <option value="M001">Programación I</option>
-                        <option value="M003">Programación II</option>
-                    </select>
-                </div>
-                <div class="row g-3">
-                    <div class="col">
-                        <label class="form-label small fw-bold">Parcial 1</label>
-                        <input type="number" class="form-control" id="modalParcial1" min="1" max="10" placeholder="1–10">
-                    </div>
-                    <div class="col">
-                        <label class="form-label small fw-bold">Parcial 2</label>
-                        <input type="number" class="form-control" id="modalParcial2" min="1" max="10" placeholder="1–10">
-                    </div>
-                    <div class="col">
-                        <label class="form-label small fw-bold">Final</label>
-                        <input type="number" class="form-control" id="modalFinal" min="1" max="10" placeholder="1–10">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary btn-sm rounded-pill" id="btnGuardarNota">Guardar Nota</button>
+<!-- ===== SECCIÓN: Tomar Asistencia ===== -->
+<section id="seccionAsistencia" class="mt-5">
+    <div class="card card-dash p-4 bg-white shadow-sm border-0">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-primary">fact_check</span> Tomar Asistencia
+            </h5>
+            <div class="d-flex gap-2 align-items-center">
+                <select id="selectMateriaAsistencia" class="form-select form-select-sm">
+                    <option value="">Cargando materias...</option>
+                </select>
+                <input type="date" id="fechaAsistencia" class="form-control form-control-sm">
             </div>
         </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Legajo</th>
+                        <th>Alumno</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaAsistencia">
+                    <tr><td colspan="3" class="text-center text-muted py-4">Seleccioná una materia</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-end mt-3">
+            <button id="btnGuardarAsistencia" class="btn btn-primary rounded-pill px-4 fw-bold">
+                Guardar Asistencia
+            </button>
+        </div>
     </div>
-</div>
+</section>
 
 <!-- ===== SCRIPTS ===== -->
 <script>
@@ -419,6 +343,7 @@
 </script>
 
 <script type="module" src="../js/auth-guard.js"></script>
+<script src="../js/dashboard-docente.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
