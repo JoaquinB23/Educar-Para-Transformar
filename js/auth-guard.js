@@ -31,6 +31,53 @@ window.cerrarSesion = async () => {
   }
 };
 
+// Oculta los links de navegación que el rol actual no puede usar.
+//
+// Antes cada panel mostraba su menú completo y el backend respondía 403 recién
+// al hacer clic: el docente veía "Dashboard Admin", lo pulsaba y aterrizaba en
+// una pantalla con "Tu usuario no tiene permisos de administración". Ahora cada
+// link declara data-roles="admin docente" y se esconde si el rol no está.
+//
+// Se llama después de traer /api/auth/me, porque hasta entonces no se conoce
+// el rol del usuario.
+window.aplicarPermisosNav = (rol) => {
+  const links = document.querySelectorAll('[data-roles]');
+  links.forEach((link) => {
+    const permitidos = (link.dataset.roles || '').split(/\s+/).filter(Boolean);
+    if (!permitidos.includes(rol)) {
+      const item = link.closest('.nav-item') || link;
+      item.style.display = 'none';
+    } else {
+      const item = link.closest('.nav-item') || link;
+      item.style.display = '';
+    }
+  });
+};
+
+// Nombre completo de una persona, tolerante a los dos esquemas que conviven
+// en `usuarios`: los perfiles creados por el panel guardan `nombre` y
+// `apellido` por separado, pero los cargados a mano guardan el nombre completo
+// en `nombre` y no tienen `apellido`. Sin este fallback, esas cuentas veían
+// "Familia" o un "undefined" pegado al lado.
+window.nombreCompleto = (persona) => {
+  if (!persona) return '';
+  const nombre = (persona.nombre || '').trim();
+  const apellido = (persona.apellido || '').trim();
+  if (apellido) return `${nombre} ${apellido}`.trim();
+  // Última palabra del nombre completo como apellido.
+  const partes = nombre.split(/\s+/).filter(Boolean);
+  return partes.length > 1 ? `${partes[0]} ${partes[partes.length - 1]}` : nombre;
+};
+
+// Sólo el apellido, para los encabezados del tipo "Familia López".
+window.apellidoDe = (persona) => {
+  if (!persona) return '';
+  const apellido = (persona.apellido || '').trim();
+  if (apellido) return apellido;
+  const partes = (persona.nombre || '').trim().split(/\s+/).filter(Boolean);
+  return partes.length > 1 ? partes[partes.length - 1] : '';
+};
+
 // Helper global para hacer fetch al backend con el token de Firebase.
 // Si el token venció (dura ~1h), lo refresca y reintenta una sola vez.
 window.fetchConAuth = async (url, options = {}) => {

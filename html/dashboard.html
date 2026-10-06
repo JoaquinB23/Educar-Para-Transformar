@@ -20,17 +20,20 @@
                 <h5 class="text-white mb-0">NovaSYS</h5>
                 <small class="text-white-50">Gestión Institucional</small>
             </div>
-            <ul class="nav flex-column mt-3">
-                <li class="nav-item"><a class="nav-link active" href="#"><span class="material-symbols-outlined me-2">analytics</span> Vista General</a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="material-symbols-outlined me-2">group</span> Control Alumnos</a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="material-symbols-outlined me-2">badge</span> Legajos Docentes</a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="material-symbols-outlined me-2">menu_book</span> Oferta Académica</a></li>
-                <li class="nav-item mt-3 border-top border-white border-opacity-10 pt-3">
-                    <a class="nav-link" href="dashboard-docente.html">
-                        <span class="material-symbols-outlined me-2">arrow_back</span> Portal Docente
-                    </a>
-                </li>
-            </ul>
+<ul class="nav flex-column mt-3">
+                    <li class="nav-item"><a class="nav-link active" href="dashboard.html"><span class="material-symbols-outlined me-2">analytics</span> Vista General</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin-alumnos.html"><span class="material-symbols-outlined me-2">school</span> Alumnos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin-materias.html"><span class="material-symbols-outlined me-2">menu_book</span> Materias</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin-usuarios.html"><span class="material-symbols-outlined me-2">manage_accounts</span> Usuarios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin-preinscripciones.html"><span class="material-symbols-outlined me-2">how_to_reg</span> Preinscripciones</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin-noticias.html"><span class="material-symbols-outlined me-2">campaign</span> Noticias</a></li>
+                    <li class="nav-item"><a class="nav-link" href="ficha-medica.html"><span class="material-symbols-outlined me-2">medical_information</span> Fichas Médicas</a></li>
+                    <li class="nav-item mt-3 border-top border-white border-opacity-10 pt-3">
+                        <a class="nav-link" href="dashboard-docente.html">
+                            <span class="material-symbols-outlined me-2">arrow_back</span> Portal Docente
+                        </a>
+                    </li>
+                </ul>
         </aside>
 
         <main class="col-md-10 main-content p-0">
@@ -38,11 +41,11 @@
             <nav class="navbar-dashboard bg-white shadow-sm px-4 py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2 w-50">
                     <span class="material-symbols-outlined text-muted">search</span>
-                    <input type="text" class="form-control border-0 bg-light rounded-pill" placeholder="Buscar alumnos, docentes o legajos...">
+                    <input type="search" id="buscarGlobalAdmin" class="form-control border-0 bg-light rounded-pill"
+                           placeholder="Buscar alumnos por nombre o legajo...">
                 </div>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="material-symbols-outlined text-muted" role="button">notifications</span>
-                    <div class="d-flex align-items-center gap-2 border-start ps-3">
+                  <div class="d-flex align-items-center gap-3">
+                      <div class="d-flex align-items-center gap-2 border-start ps-3">
                         <img src="../img/logo.png" width="32" class="rounded-circle border p-1" alt="Admin">
                         <span class="fw-bold small text-dark d-none d-sm-inline">Administración</span>
                     </div>
@@ -64,81 +67,69 @@
                     </div>
                 </header>
 
-                <section class="row g-4 mb-5">
-                    <div class="col-md-4">
+<section class="row g-4 mb-5">
+                    <div class="col-md-3">
                         <div class="card card-dash p-4 bg-white border-0 shadow-sm h-100">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <p class="text-muted small text-uppercase fw-bold mb-0">Alumnos Activos</p>
-                                <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1">+8.6%</span>
+                                <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1">activo</span>
                             </div>
-                            <h2 id="totalAlumnosAdmin" class="display-6 fw-bold text-dark">1.248</h2>
-                            <p class="text-secondary small mb-0">Estudiantes cursando presencial y virtual.</p>
+                            <h2 id="totalAlumnosAdmin" class="display-6 fw-bold text-dark">—</h2>
+                            <p class="text-secondary small mb-0">Estudiantes con estado activo en el centro.</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card card-dash p-4 bg-white border-0 shadow-sm h-100">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <p class="text-muted small text-uppercase fw-bold mb-0">Docentes Registrados</p>
-                                <span class="badge bg-info-subtle text-info rounded-pill px-2 py-1">Planta Completa</span>
+                                <span class="badge bg-info-subtle text-info rounded-pill px-2 py-1">planta</span>
                             </div>
-                            <h2 id="totalDocentesAdmin" class="display-6 fw-bold text-dark">86</h2>
-                            <p class="text-secondary small mb-0">Profesionales en todos los niveles académicos.</p>
+                            <h2 id="totalDocentesAdmin" class="display-6 fw-bold text-dark">—</h2>
+                            <p class="text-secondary small mb-0">Profesionales de todos los niveles académicos.</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card card-dash p-4 bg-white border-0 shadow-sm h-100">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <p class="text-muted small text-uppercase fw-bold mb-0">Ocupación de Aula</p>
-                                <span class="text-warning small fw-bold">Meta: 85%</span>
+                                <p class="text-muted small text-uppercase fw-bold mb-0">Materias</p>
+                                <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1">oferta</span>
                             </div>
-                            <h2 id="porcentajeOcupacion" class="display-6 fw-bold text-dark">78%</h2>
-                            <div class="progress mt-2" style="height: 6px;">
-                                <div class="progress-bar bg-warning" role="progressbar" style="width: 78%"></div>
+                            <h2 id="totalMateriasAdmin" class="display-6 fw-bold text-dark">—</h2>
+                            <p class="text-secondary small mb-0">Materias cargadas en la oferta académica.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-dash p-4 bg-white border-0 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <p class="text-muted small text-uppercase fw-bold mb-0">Inscripciones</p>
+                                <span class="badge bg-warning-subtle text-warning rounded-pill px-2 py-1">ciclo actual</span>
                             </div>
+                            <h2 id="totalInscripcionesAdmin" class="display-6 fw-bold text-dark">—</h2>
+                            <p class="text-secondary small mb-0">Inscripciones del ciclo lectivo en curso.</p>
                         </div>
                     </div>
                 </section>
+
+                <p id="estadoCargaAdmin" class="small text-muted mb-4">Cargando datos...</p>
 
                 <section class="row g-4">
                     <div class="col-lg-7">
                         <div class="card card-dash p-4 bg-white border-0 shadow-sm h-100">
                             <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="fw-bold mb-0">Resumen de Movimientos Semanales</h5>
-                                <span class="badge bg-success">Informe Activo</span>
+                                <h5 class="fw-bold mb-0">Alumnos por Nivel</h5>
+                                <span id="badgeCicloAdmin" class="badge bg-primary-subtle text-primary">Ciclo Lectivo —</span>
                             </div>
-                            <div class="row g-3">
-                                <div class="col-sm-6">
-                                    <div class="border rounded-4 p-3 bg-light h-100">
-                                        <p class="text-uppercase text-muted small mb-1 fw-bold">Matrículas Nuevas</p>
-                                        <h3 class="h4 fw-bold text-primary mb-1">72</h3>
-                                        <p class="text-secondary small mb-0">Inscripciones validadas en jardín, primaria y secundaria.</p>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="border rounded-4 p-3 bg-light h-100">
-                                        <p class="text-uppercase text-muted small mb-1 fw-bold">Altas Profesionales</p>
-                                        <h3 class="h4 fw-bold text-primary mb-1">4</h3>
-                                        <p class="text-secondary small mb-0">Nuevos docentes incorporados para idiomas y robótica.</p>
-                                    </div>
-                                </div>
+                            <div id="distribucionNivel" class="row g-3">
+                                <p class="text-muted small mb-0">Cargando distribución...</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-lg-5">
                         <div class="card card-dash p-4 bg-white border-0 shadow-sm h-100">
-                            <h5 class="fw-bold mb-4">Ocupación por Área Educativa</h5>
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-1"><span class="small fw-medium">Idiomas</span><span class="small fw-bold">92%</span></div>
-                                <div class="progress" style="height: 8px;"><div class="progress-bar bg-success" style="width: 92%;"></div></div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-1"><span class="small fw-medium">Ciencias y Robótica</span><span class="small fw-bold">74%</span></div>
-                                <div class="progress" style="height: 8px;"><div class="progress-bar bg-info" style="width: 74%;"></div></div>
-                            </div>
-                            <div>
-                                <div class="d-flex justify-content-between mb-1"><span class="small fw-medium">Deportes y Arte</span><span class="small fw-bold">68%</span></div>
-                                <div class="progress" style="height: 8px;"><div class="progress-bar bg-warning" style="width: 68%;"></div></div>
+                            <h5 class="fw-bold mb-4">Materias por Nivel</h5>
+                            <div id="distribucionMaterias">
+                                <p class="text-muted small mb-0">Cargando distribución...</p>
                             </div>
                         </div>
                     </div>
@@ -149,17 +140,121 @@
 </div>
 
 <script>
-    document.getElementById('btnRefrescarAdmin').addEventListener('click', async () => {
+    // Auth y perfil: el panel es sólo para administración, así que el backend
+    // responde 403 si el usuario no es admin (ver requireRole en API_Server.js).
+    const $ = (id) => document.getElementById(id);
+
+    function pintarKPIs(d) {
+        $('totalAlumnosAdmin').innerText = d.alumnosActivos;
+        $('totalDocentesAdmin').innerText = d.docentesRegistrados;
+        $('totalMateriasAdmin').innerText = d.materiasDisponibles;
+        $('totalInscripcionesAdmin').innerText = d.inscripcionesPeriodo;
+        $('badgeCicloAdmin').innerText = `Ciclo Lectivo ${d.cicloLectivo}`;
+    }
+
+    // Estas dos barras se calculan en el navegador con /api/alumnos (admin) y
+    // /api/materias (abierto), así que muestran datos reales y no inventados.
+    async function pintarDistribuciones() {
         try {
-            const res = await fetch('http://localhost:3000/api/dashboard');
-            const data = await res.json();
-            if(data.ok) {
-                document.getElementById('totalAlumnosAdmin').innerText = data.data.alumnosActivos;
-                document.getElementById('totalDocentesAdmin').innerText = data.data.docentesRegistrados;
-            }
+            const [resAlumnos, resMaterias] = await Promise.all([
+                window.fetchConAuth('/api/alumnos'),
+                window.fetchConAuth('/api/materias'),
+            ]);
+            const { data: alumnos } = await resAlumnos.json();
+            const { data: materias } = await resMaterias.json();
+
+            const contar = (filas, campo) => {
+                const acc = {};
+                filas.forEach((f) => { acc[f[campo] || 'sin nivel'] = (acc[f[campo] || 'sin nivel'] || 0) + 1; });
+                return acc;
+            };
+
+            const nivelAlumnos = contar(alumnos, 'nivel');
+            const nivelMaterias = contar(materias, 'nivel');
+
+            $('distribucionNivel').innerHTML = barraHTML('Alumnos por nivel', nivelAlumnos);
+            $('distribucionMaterias').innerHTML = barraHTML('Materias por nivel', nivelMaterias);
         } catch (err) {
-            console.log('Usando datos estáticos de respaldo.');
+            console.error(err);
+            $('distribucionNivel').innerHTML = '<p class="text-muted small mb-0">No se pudo calcular la distribución.</p>';
+            $('distribucionMaterias').innerHTML = '<p class="text-muted small mb-0">No se pudo calcular la distribución.</p>';
         }
+    }
+
+    function barraHTML(titulo, mapa) {
+        const claves = Object.keys(mapa);
+        if (claves.length === 0) {
+            return `<p class="text-muted small mb-0">${titulo}: sin datos cargados.</p>`;
+        }
+        const total = claves.reduce((a, k) => a + mapa[k], 0);
+        const colores = ['success', 'info', 'warning', 'primary'];
+        return `<p class="text-uppercase text-muted small fw-bold mb-3">${titulo} (${total})</p>` +
+            claves.map((k, i) => {
+                const pct = Math.round((mapa[k] / total) * 100);
+                return `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small fw-medium text-capitalize">${k}</span>
+                            <span class="small fw-bold">${mapa[k]} · ${pct}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-${colores[i % colores.length]}" role="progressbar" style="width: ${pct}%;"></div>
+                        </div>
+                    </div>`;
+            }).join('');
+    }
+
+    function avisar(mensaje, clase = 'text-muted') {
+        $('estadoCargaAdmin').innerText = mensaje;
+        $('estadoCargaAdmin').className = `small mb-0 ${clase}`;
+    }
+
+    // El buscador de la barra superior es el mismo listado de alumnos: antes
+    // era un input sin handler, Dead UI. Ahora lleva al listado con la búsqueda
+    // ya cargada.
+    $('buscarGlobalAdmin').addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        const q = $('buscarGlobalAdmin').value.trim();
+        window.location.href = q
+            ? `admin-alumnos.html?q=${encodeURIComponent(q)}`
+            : 'admin-alumnos.html';
+    });
+
+    async function cargarDashboard() {
+        const btn = $('btnRefrescarAdmin');
+        btn.disabled = true;
+        avisar('Cargando datos...');
+
+        try {
+            // window.fetchConAuth lo define js/auth-guard.js y ya refresca el
+            // token si venció. Antes esto era un fetch() pelado contra
+            // http://localhost:3000, que siempre terminaba en 401.
+            const res = await window.fetchConAuth('/api/dashboard');
+            const json = await res.json();
+
+            if (res.status === 403) {
+                avisar('Tu usuario no tiene permisos de administración.', 'text-danger fw-bold');
+                return;
+            }
+            if (!res.ok || !json.ok) {
+                avisar(json.error || 'No se pudo cargar el dashboard.', 'text-danger');
+                return;
+            }
+
+            pintarKPIs(json.data);
+            pintarDistribuciones();
+            avisar(`Actualizado ${new Date().toLocaleTimeString('es-AR')}`, 'text-success');
+        } catch (err) {
+            console.error(err);
+            avisar('Ocurrió un error de conexión al cargar el dashboard.', 'text-danger');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        $('btnRefrescarAdmin').addEventListener('click', cargarDashboard);
+        cargarDashboard();
     });
 </script>
 

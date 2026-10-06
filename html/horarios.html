@@ -44,120 +44,34 @@
             </nav>
 
             <div class="p-4 p-md-5">
-                <header class="mb-5">
+                <header class="mb-4">
                     <h1 class="h3 fw-bold mb-1">Horario Semanal</h1>
-                    <p class="text-muted mb-0">Grilla de cursada de materias y actividades extracurriculares.</p>
+                    <p class="text-muted mb-0">Cursada de tus materias del ciclo lectivo <span id="txtCiclo">2025</span>.</p>
                 </header>
 
-                <div class="card card-dash p-4 bg-white shadow-sm border-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle text-center mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Horario</th>
-                                    <th>Lunes</th>
-                                    <th>Martes</th>
-                                    <th>Miércoles</th>
-                                    <th>Jueves</th>
-                                    <th>Viernes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold text-muted bg-light">08:00 - 09:30</td>
-                                    <td>
-                                        <div class="fw-bold">Matemática I</div>
-                                        <small class="text-muted">Aula 102</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold text-primary">Inglés</div>
-                                        <small class="text-muted">Lab. Idiomas</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">Matemática I</div>
-                                        <small class="text-muted">Aula 102</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">Geografía</div>
-                                        <small class="text-muted">Aula 104</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">Ciencias Biológicas</div>
-                                        <small class="text-muted">Laboratorio 1</small>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted bg-light">09:45 - 11:15</td>
-                                    <td>
-                                        <div class="fw-bold">Prácticas del Lenguaje</div>
-                                        <small class="text-muted">Aula 105</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">Ciencias Biológicas</div>
-                                        <small class="text-muted">Laboratorio 1</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">Prácticas del Lenguaje</div>
-                                        <small class="text-muted">Aula 105</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold text-primary">Inglés</div>
-                                        <small class="text-muted">Lab. Idiomas</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">Geografía</div>
-                                        <small class="text-muted">Aula 104</small>
-                                    </td>
-                                </tr>
-                                
-                                <tr>
-                                    <td class="fw-bold text-muted bg-light">11:15 - 12:00</td>
-                                    <td colspan="5" class="bg-warning-subtle text-warning-emphasis fw-bold">
-                                        <span class="material-symbols-outlined align-middle me-1">restaurant</span> Receso y Comedor Nutricional
-                                    </td>
-                                </tr>
+                <div id="resumenHorario" class="row g-3 mb-4"></div>
 
-                                <tr>
-                                    <td class="fw-bold text-muted bg-light">12:00 - 13:30</td>
-                                    <td>
-                                        <div class="fw-bold text-success">Educación Física</div>
-                                        <small class="text-muted">Predio Deportivo</small>
-                                    </td>
-                                    <td><span class="text-muted">Libre</span></td>
-                                    <td>
-                                        <div class="fw-bold text-success">Educación Física</div>
-                                        <small class="text-muted">Predio Deportivo</small>
-                                    </td>
-                                    <td><span class="text-muted">Libre</span></td>
-                                    <td>
-                                        <div class="fw-bold">Ed. Tecnológica</div>
-                                        <small class="text-muted">Sala de Computación</small>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="card card-dash p-4 bg-white shadow-sm border-0">
+                    <div id="grillaHorario" class="table-responsive">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="text-muted mt-3 mb-0">Cargando tu horario...</p>
+                        </div>
                     </div>
                 </div>
 
+                <div class="card card-dash p-4 bg-white shadow-sm border-0 mt-4">
+                    <h2 class="h6 fw-bold mb-3">Tus materias</h2>
+                    <div id="listaMaterias" class="row g-3"></div>
+                </div>
             </div>
         </main>
     </div>
 </div>
 
-<script>
-    // Conexión de seguridad
-    const usuario = JSON.parse(localStorage.getItem('usuario'));
-    if (!usuario) {
-        window.location.href = 'login.html';
-    } else {
-        document.getElementById('txtNombreSidebar').innerText = usuario.nombre;
-        document.getElementById('navNombreAlumno').innerText = usuario.nombre;
-    }
-    document.getElementById('btnCerrarSesionTop').addEventListener('click', () => {
-        localStorage.removeItem('usuario');
-        window.location.href = 'login.html';
-    });
-</script>
+<script type="module" src="../js/auth-guard.js"></script>
+<script src="../js/notificaciones.js"></script>
+<script src="../js/horarios.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

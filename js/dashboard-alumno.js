@@ -18,13 +18,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const respPerfil = await window.fetchConAuth('/api/auth/me');
         if (!respPerfil.ok) throw new Error('No se pudo cargar el perfil');
         const { data: perfil } = await respPerfil.json();
+        window.aplicarPermisosNav(perfil.rol);
+
+        // El esquema unificado separa nombre y apellido, así que los dos van juntos.
+        const nombreCompleto = [perfil.nombre, perfil.apellido].filter(Boolean).join(' ');
+        const nombre = perfil.nombre || nombreCompleto || '';
 
         // Pintamos los datos del perfil en la pantalla
-        document.getElementById('txtBienvenida').innerText = `Bienvenido, ${perfil.nombre || ''}`;
-        document.getElementById('txtNombreSidebar').innerText = perfil.nombre || '';
-        document.getElementById('navNombreAlumno').innerText = perfil.nombre || '';
-        document.getElementById('perfilNombreCompleto').innerText = perfil.nombre || '';
+        document.getElementById('txtBienvenida').innerText = `Bienvenido, ${nombre}`;
+        document.getElementById('txtNombreSidebar').innerText = nombreCompleto;
+        document.getElementById('navNombreAlumno').innerText = nombreCompleto;
+        document.getElementById('perfilNombreCompleto').innerText = nombreCompleto;
         document.getElementById('perfilRol').innerText = `Rol verificado: ${(perfil.rol || '').toUpperCase()}`;
+
+        const ciclo = document.getElementById('perfilCiclo');
+        if (ciclo) ciclo.innerText = perfil.cicloLectivoActual || '—';
 
         if (!perfil.alumnoId) {
             if (tabla) {
@@ -33,6 +41,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td></tr>`;
             }
             return;
+        }
+
+        // El link a la ficha médica necesita saber a qué alumno pertenece.
+        document.querySelectorAll('a[href="ficha-medica.html"]').forEach((a) => {
+            a.href = `ficha-medica.html?alumnoId=${perfil.alumnoId}`;
+        });
+
+        // El legajo real vive en el registro del alumno, no en el perfil.
+        try {
+            const respAlumno = await window.fetchConAuth(`/api/alumnos/${perfil.alumnoId}`);
+            if (respAlumno.ok) {
+                const { data: alumno } = await respAlumno.json();
+                const legajo = document.getElementById('perfilLegajo');
+                if (legajo) legajo.innerText = alumno.legajo || '—';
+            }
+        } catch (e) {
+            console.error('No se pudo cargar el legajo:', e);
         }
 
         // 2. Inscripciones de este alumno

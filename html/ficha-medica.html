@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha Médica | NovaSYS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    <link rel="icon" href="../img/logo.png" type="image/png">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body class="bg-light pt-0 m-0">
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <aside class="col-md-2 d-none d-md-block sidebar p-0 vh-100 position-sticky top-0">
+            <div class="p-4 text-center">
+                <img src="../img/logo.png" width="50" class="mb-2 bg-white rounded-circle p-1" alt="Logo NovaSYS">
+                <h5 class="text-white mb-0">Ficha Médica</h5>
+                <small class="text-white-50">Salud Escolar</small>
+            </div>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item"><a class="nav-link" href="dashboard-alumno.html" data-roles="alumno admin"><span class="material-symbols-outlined me-2">school</span> Portal Alumno</a></li>
+                <li class="nav-item"><a class="nav-link" href="dashboard-docente.html" data-roles="docente admin"><span class="material-symbols-outlined me-2">local_library</span> Portal Docente</a></li>
+                <li class="nav-item"><a class="nav-link" href="dashboard-familia.html" data-roles="familia admin"><span class="material-symbols-outlined me-2">family_restroom</span> Portal Familia</a></li>
+                <li class="nav-item mt-3 border-top border-white border-opacity-10 pt-3">
+                    <a class="nav-link" href="dashboard.html" data-roles="admin"><span class="material-symbols-outlined me-2">arrow_back</span> Administración</a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="col-md-10 main-content p-0">
+            <nav class="navbar-dashboard bg-white shadow-sm px-4 py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <span class="material-symbols-outlined text-primary me-2">medical_information</span>
+                    <span id="txtAlumnoFicha" class="fw-bold">Cargando...</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span id="perfilRolFicha" class="badge bg-secondary-subtle text-secondary border">—</span>
+                    <button onclick="window.cerrarSesion()" class="btn btn-outline-danger btn-sm rounded-pill fw-bold ms-2">Cerrar Sesión</button>
+                </div>
+            </nav>
+
+            <div class="p-4 p-md-5">
+                <header class="mb-4 d-flex justify-content-between align-items-end flex-wrap gap-3">
+                    <div>
+                        <h1 class="h3 fw-bold mb-1">Ficha Médica</h1>
+                        <p class="text-muted mb-0">Antecedentes, alergias y registro de atenciones.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button id="btnRecargar" class="btn btn-outline-secondary rounded-pill px-3">
+                            <span class="material-symbols-outlined align-middle me-1" style="font-size:16px">refresh</span> Recargar
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Aviso de que el usuario no tiene nada vinculado todavía -->
+                <div id="msgSinVinculo" class="alert alert-info d-none">
+                    <strong>Sin alumno seleccionado.</strong>
+                    <span id="msgSinVinculoDetalle"></span>
+                </div>
+
+                <!-- Selector para administración / docentes -->
+                <div id="panelBuscador" class="card card-dash p-4 bg-white shadow-sm border-0 mb-4 d-none">
+                    <h6 class="fw-bold mb-3">Buscar alumno</h6>
+                    <input type="text" id="inputBuscarAlumno" class="form-control mb-2"
+                           placeholder="Escribí el nombre, apellido o legajo...">
+                    <div id="resultadosAlumno" class="list-group"></div>
+                </div>
+
+                <div id="contenidoFicha" class="d-none">
+                    <!-- Datos generales -->
+                    <div class="card card-dash p-4 bg-white shadow-sm border-0 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">badge</span> Datos Generales
+                            </h5>
+                            <button id="btnEditarFicha" class="btn btn-outline-primary btn-sm rounded-pill">
+                                <span class="material-symbols-outlined align-middle me-1" style="font-size:16px">edit</span> Editar
+                            </button>
+                        </div>
+                        <div id="datosGenerales" class="row g-3"></div>
+                    </div>
+
+                    <!-- Alergias / condiciones -->
+                    <div id="bloqueAlertas" class="d-none mb-4"></div>
+
+                    <!-- Registro de atenciones -->
+                    <div class="card card-dash p-4 bg-white shadow-sm border-0">
+                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">history</span> Registro de Atenciones
+                            </h5>
+                            <button id="btnNuevaAtencion" class="btn btn-primary btn-sm rounded-pill">
+                                <span class="material-symbols-outlined align-middle me-1" style="font-size:16px">add</span> Nueva atención
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Motivo</th>
+                                        <th>Diagnóstico</th>
+                                        <th>Tratamiento</th>
+                                        <th>Registrado por</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaAtenciones">
+                                    <tr><td colspan="6" class="text-center text-muted py-4">Sin atenciones registradas.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- ===== MODAL: Datos generales ===== -->
+<div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Datos generales de la ficha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Grupo sanguíneo</label>
+                        <input type="text" id="fGrupoSanguineo" class="form-control" placeholder="Ej: O+">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Medicación actual</label>
+                        <input type="text" id="fMedicacion" class="form-control" placeholder="Ej: Ninguna">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Alergias (separadas por coma)</label>
+                        <input type="text" id="fAlergias" class="form-control" placeholder="Ej: penicilina, maní">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Condiciones médicas (separadas por coma)</label>
+                        <input type="text" id="fCondiciones" class="form-control" placeholder="Ej: asma">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Contacto de emergencia</label>
+                        <input type="text" id="fContactoNombre" class="form-control" placeholder="Nombre y apellido">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Teléfono de emergencia</label>
+                        <input type="text" id="fContactoTel" class="form-control" placeholder="Ej: 3624-000000">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary">Observaciones</label>
+                        <textarea id="fObservaciones" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div id="modalFichaError" class="alert alert-danger d-none py-2 small mt-3 mb-0"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="btnGuardarFicha" class="btn btn-primary rounded-pill px-4">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL: Nueva atención ===== -->
+<div class="modal fade" id="modalAtencion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Registrar atención</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Fecha *</label>
+                        <input type="date" id="aFecha" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary">Motivo de la atención *</label>
+                        <input type="text" id="aMotivo" class="form-control" placeholder="Ej: Dolor de cabeza">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary">Diagnóstico</label>
+                        <input type="text" id="aDiagnostico" class="form-control" placeholder="Ej: Migraña tensional">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary">Tratamiento</label>
+                        <input type="text" id="aTratamiento" class="form-control" placeholder="Ej: Paracetamol, reposo">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary">Observaciones</label>
+                        <textarea id="aObservaciones" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div id="modalAtencionError" class="alert alert-danger d-none py-2 small mt-3 mb-0"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="btnGuardarAtencion" class="btn btn-primary rounded-pill px-4">Registrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="../js/auth-guard.js"></script>
+<script src="../js/ficha-medica.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

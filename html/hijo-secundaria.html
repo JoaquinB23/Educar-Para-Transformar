@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sofía - Secundaria | NovaSYS</title>
+    <title>Hijo/a - Secundaria | NovaSYS</title>
     <link rel="icon" href="../img/logo.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
@@ -17,7 +17,7 @@
         <aside class="col-md-2 d-none d-md-block sidebar p-0 vh-100 position-sticky top-0">
             <div class="p-4 text-center border-bottom border-secondary">
                 <span class="material-symbols-outlined display-4 text-white mb-2">family_home</span>
-                <h5 class="text-white mb-0">Familia Fernández</h5>
+                <h5 id="txtFamiliaSecundaria" class="text-white mb-0">Familia</h5>
                 <small class="text-white-50">Portal de Tutores</small>
             </div>
             <ul class="nav flex-column mt-3">
@@ -25,12 +25,24 @@
                 <div class="sidebar-heading">Mis Hijos</div>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-2" href="hijo-primaria.html">
-                        <span class="material-symbols-outlined fs-5">face</span> Tomás (Primaria)
+                        <span class="material-symbols-outlined fs-5">face</span> <span id="navHijoPrimaria">Hijo/a (Primaria)</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active d-flex align-items-center gap-2" href="hijo-secundaria.html">
-                        <span class="material-symbols-outlined fs-5">face_4</span> Sofía (Secundaria)
+                        <span class="material-symbols-outlined fs-5">face_4</span> <span id="navHijoSecundaria">Hijo/a (Secundaria)</span>
+                    </a>
+                </li>
+                <div class="sidebar-heading">Salud</div>
+                <li class="nav-item">
+                    <a class="nav-link" id="linkFichaSecundaria" href="ficha-medica.html">
+                        <span class="material-symbols-outlined me-2">medical_information</span> Ficha Médica
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard-familia.html#avisos">
+                        <span class="material-symbols-outlined me-2">campaign</span> Notificaciones
+                        <span class="badge-notif badge bg-danger rounded-pill ms-2 d-none">0</span>
                     </a>
                 </li>
             </ul>
@@ -39,7 +51,7 @@
         <main class="col-md-10 main-content p-0">
             <nav class="navbar-dashboard bg-white shadow-sm px-4 py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold">Ciclo Lectivo 2027</span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold">Ciclo Lectivo 2025</span>
                 </div>
                 <a href="login.html" class="btn btn-outline-danger btn-sm rounded-pill fw-bold ms-2">Salir</a>
             </nav>
@@ -50,9 +62,8 @@
                         <span class="material-symbols-outlined display-4">face_4</span>
                     </div>
                     <div>
-                        <h1 class="h3 fw-bold mb-1">Sofía Fernández</h1>
-                        <p class="text-muted mb-1">2do Año - Ciclo Básico Secundario</p> 
-                        <span class="badge bg-success">Alumna Regular</span>
+                        <h1 id="nombreHijoSecundaria" class="h3 fw-bold mb-1">Hijo/a</h1>
+                        <p id="detalleHijoSecundaria" class="text-muted mb-1">Ciclo Básico Secundario</p>
                     </div>
                 </header>
 
@@ -71,29 +82,7 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="fw-bold">Lengua y Literatura</td>
-                                            <td>8.50</td>
-                                            <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Matemática</td>
-                                            <td>9.00</td>
-                                            <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Biología</td>
-                                            <td>7.50</td>
-                                            <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Geografía</td>
-                                            <td>8.00</td>
-                                            <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold text-primary">Educación Tecnológica</td>
-                                            <td>10.00</td>
-                                            <td><span class="badge bg-success-subtle text-success border border-success-subtle">Sobresaliente</span></td>
+                                            <td colspan="3" class="text-center text-muted py-4">Sin datos de rendimiento cargados.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -104,22 +93,7 @@
                     <div class="col-lg-4 dash-reveal delay-200">
                         <div class="card card-dash p-4 bg-white border-0 shadow-sm h-100">
                             <h5 class="fw-bold text-dark mb-4">Deportes de Competencia</h5>
-                            
-                            <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-4">
-                                <div class="bg-success text-white p-2 rounded-circle d-flex align-items-center justify-content-center"><span class="material-symbols-outlined">sports_soccer</span></div>
-                                <div>
-                                    <h6 class="fw-bold mb-0">Fútbol Femenino</h6>
-                                    <small class="text-muted">Lunes y Miércoles - Predio</small>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4">
-                                <div class="bg-info text-white p-2 rounded-circle d-flex align-items-center justify-content-center"><span class="material-symbols-outlined">directions_run</span></div>
-                                <div>
-                                    <h6 class="fw-bold mb-0">Atletismo</h6>
-                                    <small class="text-muted">Viernes - Pista Reglamentaria</small>
-                                </div>
-                            </div>
+                            <p class="text-muted mb-0">Sin actividades cargadas.</p>
                         </div>
                     </div>
                 </div>
@@ -150,17 +124,51 @@
             const alumnoId = perfil.hijoSecundariaId;
             const container = document.getElementById('asistencias-container');
 
-            if (alumnoId && container) {
+            const apellido = window.apellidoDe(perfil);
+            document.getElementById('txtFamiliaSecundaria').innerText = apellido ? `Familia ${apellido}` : (window.nombreCompleto(perfil) || 'Familia');
+
+            if (!alumnoId) {
+                if (container) {
+                    container.innerHTML = '<p class="text-muted mt-3 mb-0">No tenés un hijo vinculado en este nivel.</p>';
+                }
+                document.getElementById('nombreHijoSecundaria').innerText = 'Sin hijo vinculado';
+                document.getElementById('detalleHijoSecundaria').innerText = 'Ciclo Básico Secundario';
+                return;
+            }
+
+            // La ficha médica de este nivel se abre siempre con el hijo de secundaria.
+            document.getElementById('linkFichaSecundaria').href = `ficha-medica.html?alumnoId=${alumnoId}`;
+
+            if (container) {
                 container.dataset.alumnoId = alumnoId;
                 window.cargarAsistencias(alumnoId, container);
-            } else if (container) {
-                container.innerHTML = '<p class="text-muted mt-3 mb-0">No tenés un hijo vinculado en este nivel.</p>';
+            }
+
+            // Nombre real del alumno + etiquetas del sidebar con los dos hijos.
+            const [esteHijo, otroHijo] = await Promise.all([
+                window.fetchConAuth(`/api/alumnos/${alumnoId}`),
+                perfil.hijoPrimariaId ? window.fetchConAuth(`/api/alumnos/${perfil.hijoPrimariaId}`) : Promise.resolve(null),
+            ]);
+
+            if (esteHijo.ok) {
+                const { data: alumno } = await esteHijo.json();
+                document.getElementById('nombreHijoSecundaria').innerText = `${alumno.nombre} ${alumno.apellido}`;
+                document.title = `${alumno.nombre} ${alumno.apellido} - Secundaria | NovaSYS`;
+                document.getElementById('detalleHijoSecundaria').innerText =
+                    `${alumno.grado || ''}${alumno.grado ? ' - ' : ''}Ciclo Básico Secundario${alumno.legajo ? ` · Legajo ${alumno.legajo}` : ''}`;
+                document.getElementById('navHijoSecundaria').innerText = `${alumno.nombre} (Secundaria)`;
+            }
+
+            if (otroHijo && otroHijo.ok) {
+                const { data: hermano } = await otroHijo.json();
+                document.getElementById('navHijoPrimaria').innerText = `${hermano.nombre} (Primaria)`;
             }
         } catch (err) {
             console.error('Error resolviendo el hijo:', err);
         }
     });
 </script>
+<script src="../js/notificaciones.js"></script>
 <script src="../js/asistencias.js"></script>
 </body>
 </html>

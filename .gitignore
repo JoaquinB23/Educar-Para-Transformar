@@ -2,8 +2,18 @@
 
 # Env — credenciales Firebase y secretos
 .env
-.env.local
 js/env.js
+Backend/.env
+
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
+
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+# El service account con la clave privada nunca va al repo
+*serviceAccount*.json

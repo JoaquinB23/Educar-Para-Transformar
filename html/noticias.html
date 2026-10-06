@@ -32,7 +32,7 @@
                         <span class="material-symbols-outlined fs-6">login</span> Ingresar
                     </a>
                     <a href="preinscripcion.html" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm custom-btn-hover">
-                        Inscripciones 2027
+                        Inscripciones 2025
                     </a>
                 </div>
             </div>
@@ -48,55 +48,34 @@
     </header>
 
     <main class="container py-5 my-4">
-        <div class="row g-4">
-            
-            <div class="col-lg-4 col-md-6">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden custom-hover-card">
-                    <img src="../img/portada1.jpg" class="card-img-top object-fit-cover" alt="Noticia 1" style="height: 200px;">
-                    <div class="card-body p-4 d-flex flex-column">
-                        <div class="mb-2">
-                            <span class="badge bg-warning text-dark">Institucional</span>
-                            <small class="text-muted ms-2">15 Jun, 2026</small>
-                        </div>
-                        <h4 class="card-title fw-bold">Apertura Oficial de Inscripciones 2027</h4>
-                        <p class="card-text text-secondary mb-4">Con gran entusiasmo anunciamos el inicio de nuestro proceso de matriculación para el primer ciclo lectivo de nuestra institución.</p>
-                        <a href="#" class="mt-auto fw-bold text-primary text-decoration-none">Leer más <i class="bi bi-arrow-right"></i></a>
-                    </div>
-                </div>
+        <div id="listaNoticias" class="row g-4">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted mt-3 mb-0">Cargando las noticias...</p>
             </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden custom-hover-card">
-                    <img src="../img/Pileta natacion.jpg" class="card-img-top object-fit-cover" alt="Noticia 2" style="height: 200px;">
-                    <div class="card-body p-4 d-flex flex-column">
-                        <div class="mb-2">
-                            <span class="badge bg-info text-white">Deportes</span>
-                            <small class="text-muted ms-2">08 Jun, 2026</small>
-                        </div>
-                        <h4 class="card-title fw-bold">Finalizan obras del Complejo Acuático</h4>
-                        <p class="card-text text-secondary mb-4">Nuestra pileta olímpica climatizada ya está en la fase final de pruebas. Un espacio de primer nivel para nuestros futuros alumnos.</p>
-                        <a href="#" class="mt-auto fw-bold text-primary text-decoration-none">Leer más <i class="bi bi-arrow-right"></i></a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden custom-hover-card">
-                    <img src="../img/ninosEstudiando.jpg" class="card-img-top object-fit-cover" alt="Noticia 3" style="height: 200px;">
-                    <div class="card-body p-4 d-flex flex-column">
-                        <div class="mb-2">
-                            <span class="badge bg-success text-white">Académico</span>
-                            <small class="text-muted ms-2">25 May, 2026</small>
-                        </div>
-                        <h4 class="card-title fw-bold">Alianza estratégica con Cambridge</h4>
-                        <p class="card-text text-secondary mb-4">Firmamos un convenio para que nuestro programa de inglés cuente con certificación internacional desde la primaria.</p>
-                        <a href="#" class="mt-auto fw-bold text-primary text-decoration-none">Leer más <i class="bi bi-arrow-right"></i></a>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </main>
+
+    <div class="modal fade" id="modalNoticia" tabindex="-1" aria-labelledby="mdTitulo" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h3 class="modal-title h5 fw-bold" id="mdTitulo"></h3>
+                        <small class="text-muted" id="mdFecha"></small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <img id="mdImagen" src="" alt="" class="img-fluid rounded-3 mb-3 d-none">
+                    <div id="mdCuerpo"></div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-primary rounded-pill fw-bold" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer id="contacto" class="site-footer py-5">
         <div class="container py-4">
@@ -134,5 +113,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/noticias.js"></script>
 </body>
 </html>

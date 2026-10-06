@@ -23,8 +23,27 @@
             <ul class="nav flex-column mt-3">
                 <li class="nav-item"><a class="nav-link active" href="#"><span class="material-symbols-outlined me-2">school</span> Mis Materias</a></li>
                 <li class="nav-item"><a class="nav-link" href="calificaciones.html"><span class="material-symbols-outlined me-2">task_alt</span> Calificaciones</a></li>
+                <li class="nav-item"><a class="nav-link" href="ficha-medica.html"><span class="material-symbols-outlined me-2">medical_information</span> Ficha Médica</a></li>
                 <li class="nav-item"><a class="nav-link" href="horarios.html"><span class="material-symbols-outlined me-2">calendar_month</span> Horarios y Fechas</a></li>
             </ul>
+            <div class="mt-auto p-4">
+                <!-- Es un botón, no un span: despliega los avisos adentro del
+                     propio sidebar. El contador lo pone notificaciones.js. -->
+                <button type="button" id="btnNotificaciones" data-toggle-notif
+                        aria-expanded="false" aria-controls="panelNotificaciones"
+                        aria-label="Ver notificaciones"
+                        class="badge bg-warning-subtle text-warning border border-warning-subtle w-100 text-start d-flex align-items-center gap-1">
+                    <span class="material-symbols-outlined fs-6 align-middle me-1">campaign</span>
+                    Notificaciones
+                    <span class="badge-notif badge bg-danger rounded-pill ms-auto d-none">0</span>
+                </button>
+                <div id="panelNotificaciones" class="d-none mt-2 p-2 bg-white rounded-3 shadow-sm"
+                     style="max-height: 45vh; overflow-y: auto;">
+                    <div id="contenedorNotificaciones">
+                        <p class="text-muted mb-0">Cargando avisos...</p>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <main class="col-md-10 main-content p-0">
@@ -68,16 +87,7 @@
                                     </thead>
                                     <tbody id="tablaMateriasAlumno">
                                         <tr>
-                                            <td><code>M001</code></td>
-                                            <td class="fw-bold">Programación I</td>
-                                            <td>80 Horas</td>
-                                            <td><span class="badge bg-success-subtle text-success border border-success-subtle">Cursando Regular</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td><code>M002</code></td>
-                                            <td class="fw-bold">Base de Datos I</td>
-                                            <td>64 Horas</td>
-                                            <td><span class="badge bg-success-subtle text-success border border-success-subtle">Cursando Regular</span></td>
+                                            <td colspan="4" class="text-center text-muted py-4">Cargando materias...</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -96,8 +106,8 @@
                                 </div>
                             </div>
                             <hr class="text-muted my-3">
-                            <div class="d-flex justify-content-between small mb-2"><span>Legajo Activo:</span><span class="fw-bold text-dark">A001</span></div>
-                            <div class="d-flex justify-content-between small"><span>Condición General:</span><span class="badge bg-success">Regular</span></div>
+                            <div class="d-flex justify-content-between small mb-2"><span>Legajo Activo:</span><span id="perfilLegajo" class="fw-bold text-dark">—</span></div>
+                            <div class="d-flex justify-content-between small"><span>Ciclo Lectivo:</span><span id="perfilCiclo" class="fw-bold text-dark">—</span></div>
                         </div>
                     </div>
                 </section>
@@ -106,6 +116,7 @@
     </div>
 </div>
 <script type="module" src="../js/auth-guard.js"></script>
+<script src="../js/notificaciones.js"></script>
 <script src="../js/dashboard-alumno.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

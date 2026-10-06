@@ -36,13 +36,40 @@
 .login-input-group:focus-within { box-shadow: 0 0 0 0.25rem rgba(20, 184, 166, 0.15); border-radius: 0.375rem; }
 .login-input-group:focus-within .input-group-text, .login-input-group:focus-within .form-control { border-color: var(--logo-primario); }
 
-/* Tarjetas de Selección de Rol (Alumno, Docente, Familia) */
+/* Botón del ojo: tiene que verse como el resto del input-group, sin el borde
+   propio de .btn ni el fondo del navegador. */
+.login-input-group #btnVerPassword {
+    background-color: transparent;
+    border: 1px solid #dee2e6;
+    border-left: none;
+    border-radius: 0 0.375rem 0.375rem 0;
+    padding: 0 0.75rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+}
+.login-input-group #btnVerPassword:hover,
+.login-input-group #btnVerPassword:focus-visible {
+    background-color: rgba(20, 184, 166, 0.08);
+    border-color: var(--logo-primario);
+    outline: none;
+}
+.login-input-group:focus-within #btnVerPassword { border-color: var(--logo-primario); }
+
+/* Tarjetas de Selección de Rol (Alumno, Docente, Familia, Administración) */
 .role-card { 
     border: 2px solid #e2e8f0; 
     color: var(--text-muted); 
     background-color: rgba(248, 250, 252, 0.95); 
     transition: var(--transition); 
     cursor: pointer; 
+    /* Bootstrap define .btn con white-space: nowrap, y estas tarjetas son .btn.
+       "Administración" es la etiqueta más larga y no entra en un cuarto de la
+       columna, así que el texto se salía del cuadro. */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    line-height: 1.25;
 }
 .role-card:hover { border-color: var(--logo-acento2); color: var(--logo-acento2); transform: translateY(-3px); }
 .btn-check:checked + .role-card { transform: translateY(-3px); }
@@ -75,5 +102,15 @@
 #roleFamilia:checked + .role-card .material-symbols-outlined { color: var(--logo-acento); }
 
 /* Subtarjetas de Nivel (Primaria / Secundaria) */
-.sub-role-card { border: 1px solid #e2e8f0; padding: 0.5rem; font-size: 0.85rem; background-color: #ffffff; }
+.sub-role-card {
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    background-color: #ffffff;
+    /* Mismo problema que .role-card: es un .btn, así que sin esto el texto no
+       envuelve y "Nivel Secundario" se desborda cerca del breakpoint lg. */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
+}
 .btn-check:checked + .sub-role-card { border-color: var(--logo-terciario) !important; background-color: rgba(20, 184, 166, 0.1); color: var(--logo-primario); font-weight: bold; }

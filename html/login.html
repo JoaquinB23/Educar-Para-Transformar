@@ -28,8 +28,7 @@
                             Niveles
                         </a>
                         <ul class="dropdown-menu border-0 shadow-sm rounded-4" aria-labelledby="nivelesDropdown">
-                            <li><a class="dropdown-item py-2" href="inicial.html">Nivel Inicial</a></li>
-                            <li><a class="dropdown-item py-2" href="primario.html">Nivel Primario</a></li>
+                        <li><a class="dropdown-item py-2" href="primario.html">Nivel Primario</a></li>
                             <li><a class="dropdown-item py-2" href="secundario.html">Nivel Secundario</a></li>
                         </ul>
                     </li>
@@ -42,7 +41,7 @@
                         <span class="material-symbols-outlined fs-6">login</span> Ingresar
                     </a>
                     <a href="preinscripcion.html" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm custom-btn-hover">
-                        Inscripciones 2027
+                        Inscripciones 2025
                     </a>
                 </div>
             </div>
@@ -63,25 +62,32 @@
                     <form action="#" method="POST" autocomplete="off">
                         
                         <div class="row g-2 mb-3">
-                            <div class="col-4">
+                            <div class="col-3">
                                 <input type="radio" class="btn-check role-selector" name="userRole" id="roleAlumno" value="alumno" autocomplete="off" checked>
                                 <label class="btn btn-outline-primary w-100 p-2 p-sm-3 role-card rounded-3" for="roleAlumno">
                                     <span class="material-symbols-outlined d-block mb-1 fs-3">school</span>
                                     <span class="small fw-bold d-block">Alumno</span>
                                 </label>
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <input type="radio" class="btn-check role-selector" name="userRole" id="roleDocente" value="docente" autocomplete="off">
                                 <label class="btn btn-outline-primary w-100 p-2 p-sm-3 role-card rounded-3" for="roleDocente">
                                     <span class="material-symbols-outlined d-block mb-1 fs-3">local_library</span>
-                                    <span class="small fw-bold d-block">Administrativo</span>
+                                    <span class="small fw-bold d-block">Docente</span>
                                 </label>
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <input type="radio" class="btn-check role-selector" name="userRole" id="roleFamilia" value="familia" autocomplete="off">
                                 <label class="btn btn-outline-primary w-100 p-2 p-sm-3 role-card rounded-3" for="roleFamilia">
                                     <span class="material-symbols-outlined d-block mb-1 fs-3">family_restroom</span>
                                     <span class="small fw-bold d-block">Tutor</span>
+                                </label>
+                            </div>
+                            <div class="col-3">
+                                <input type="radio" class="btn-check role-selector" name="userRole" id="roleAdmin" value="admin" autocomplete="off">
+                                <label class="btn btn-outline-primary w-100 p-2 p-sm-3 role-card rounded-3" for="roleAdmin">
+                                    <span class="material-symbols-outlined d-block mb-1 fs-3">admin_panel_settings</span>
+                                    <span class="small fw-bold d-block">Administ-ración</span>
                                 </label>
                             </div>
                         </div>
@@ -109,10 +115,11 @@
                             <label for="password" class="form-label text-secondary fw-bold small">Contraseña</label>
                             <div class="input-group login-input-group border rounded-3 overflow-hidden">
                                 <span class="input-group-text"><span class="material-symbols-outlined text-secondary fs-5">lock_outline</span></span>
-                                <input type="password" class="form-control py-2 shadow-none border-end-0" id="password" required>
-                                <span class="input-group-text bg-transparent border-start-0 cursor-pointer" role="button">
-                                    <span class="material-symbols-outlined text-secondary fs-5">visibility_off</span>
-                                </span>
+                                <input type="password" class="form-control py-2 shadow-none border-end-0" id="password" required autocomplete="current-password">
+                                <button type="button" class="btn btn-outline-secondary bg-transparent border-start-0" id="btnVerPassword"
+                                        aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                                    <span class="material-symbols-outlined text-secondary fs-5" id="iconoVerPassword">visibility_off</span>
+                                </button>
                             </div>
                         </div>
 
@@ -159,11 +166,16 @@
                     imagePanel.style.backgroundImage = "linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.75)), url('img/docente.jpg')";
                     loginTitle.innerText = "Portal Docente";
                     loginDesc.innerText = "Gestiona tus clases, asistencias, planeaciones y comunicación con las familias.";
-                } else if (selectedRole === 'familia') {
+} else if (selectedRole === 'familia') {
                     subRoleContainer.style.display = 'none'; // Familia no necesita elegir nivel
                     imagePanel.style.backgroundImage = "linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.75)), url('img/tutores.jpg')";
                     loginTitle.innerText = "Portal Familia";
-                    loginDesc.innerText = "Acompaña el progreso académico, revisa reportes y autorizaciones.";
+                    loginDesc.innerText = "Acompañá el progreso académico, revisa reportes y autorizaciones.";
+                } else if (selectedRole === 'admin') {
+                    subRoleContainer.style.display = 'none'; // Administración no es de un nivel
+                    imagePanel.style.backgroundImage = "linear-gradient(rgba(11, 37, 69, 0.85), rgba(11, 37, 69, 0.75)), url('img/logo.png')";
+                    loginTitle.innerText = "Panel de Administración";
+                    loginDesc.innerText = "Gestioná alumnos, docentes, materias e inscripciones del centro.";
                 }
             });
         });
@@ -181,6 +193,29 @@
             'auth/too-many-requests':  'Demasiados intentos fallidos. Esperá unos minutos.',
             'auth/network-request-failed': 'Sin conexión a internet.'
         };
+
+        // Mostrar / ocultar contraseña. Antes el ícono era un <span> sin
+        // handler, así que no hacía nada. Va como <button type="button"> para no
+        // disparar el submit del formulario.
+        (function alternarVisibilidadPassword() {
+            const input  = document.getElementById('password');
+            const boton  = document.getElementById('btnVerPassword');
+            const icono  = document.getElementById('iconoVerPassword');
+            if (!input || !boton || !icono) return;
+
+            boton.addEventListener('click', () => {
+                const visible = input.type === 'text';
+                input.type = visible ? 'password' : 'text';
+                icono.textContent = visible ? 'visibility_off' : 'visibility';
+                boton.setAttribute('aria-pressed', String(!visible));
+                const etiqueta = visible ? 'Mostrar contraseña' : 'Ocultar contraseña';
+                boton.setAttribute('aria-label', etiqueta);
+                boton.setAttribute('title', etiqueta);
+                // Al volver a oculto, el cursor queda al final para no perder
+                // la posición en un campo largo.
+                if (visible) input.focus();
+            });
+        })();
 
         document.querySelector('form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -214,7 +249,7 @@
                     await signOut(auth);
                     return;
                 }
-                if (rol !== 'familia' && perfil.nivel !== nivel) {
+                if (rol !== 'familia' && rol !== 'admin' && perfil.nivel !== nivel) {
                     alert('El nivel seleccionado no corresponde a este usuario.');
                     await signOut(auth);
                     return;
@@ -229,6 +264,7 @@
                 if (rol === 'alumno')  window.location.href = 'dashboard-alumno.html';
                 if (rol === 'docente') window.location.href = 'dashboard-docente.html';
                 if (rol === 'familia') window.location.href = 'dashboard-familia.html';
+                if (rol === 'admin')   window.location.href = 'dashboard.html';
 
             } catch (err) {
                 alert(MENSAJES_ERROR[err.code] || 'Error al iniciar sesión.');

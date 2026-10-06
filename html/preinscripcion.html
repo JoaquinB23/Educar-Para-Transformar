@@ -29,8 +29,7 @@
                             Niveles
                         </a>
                         <ul class="dropdown-menu border-0 shadow-sm rounded-4" aria-labelledby="nivelesDropdown">
-                            <li><a class="dropdown-item py-2" href="inicial.html">Nivel Inicial</a></li>
-                            <li><a class="dropdown-item py-2" href="primario.html">Nivel Primario</a></li>
+                        <li><a class="dropdown-item py-2" href="primario.html">Nivel Primario</a></li>
                             <li><a class="dropdown-item py-2" href="secundario.html">Nivel Secundario</a></li>
                         </ul>
                     </li>
@@ -43,12 +42,13 @@
                         <span class="material-symbols-outlined fs-6">login</span> Ingresar
                     </a>
                     <a href="preinscripcion.html" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm custom-btn-hover">
-                        Inscripciones 2027
+                        Inscripciones 2025
                     </a>
                 </div>
             </div>
         </div>
     </nav>
+
 
     <div class="container py-5 mt-4">
         
@@ -61,11 +61,13 @@
         </div>
 
         <div class="text-center mb-5">
-            <h2 class="fw-bold text-primary display-6 section-heading">Formulario de Preinscripción 2027</h2>
+            <h2 class="fw-bold text-primary display-6 section-heading">Formulario de Preinscripción 2025</h2>
             <p class="text-secondary">Completa todos los campos con los datos reales del alumno y su tutor responsable.</p>
         </div>
 
-        <form action="#" method="POST">
+        <form id="formPreinscripcion" novalidate>
+            <input type="text" name="trampa" class="d-none" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div id="msgPreinscripcion" class="alert d-none" role="alert"></div>
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-primary text-white p-3 rounded-top-4">
                     <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
@@ -76,28 +78,28 @@
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label text-secondary fw-bold small">Nombre Completo del Alumno</label>
-                            <input type="text" name="nombreAlumno" class="form-control bg-light" required>
+                            <input type="text" name="nombreAlumno" class="form-control bg-light" minlength="3" required>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-secondary fw-bold small">Nivel al que ingresa</label>
-                            <select name="nivelIngresa" class="form-select bg-light" required>
-                                <option value="" selected disabled>Seleccione un nivel...</option>
-                                <option value="inicial">Nivel Inicial</option>
-                                <option value="primario">Nivel Primario</option>
-                                <option value="secundario">Nivel Secundario</option>
-                            </select>
-                        </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary fw-bold small">Nivel al que ingresa</label>
+                    <select name="nivel" class="form-select bg-light" required>
+                        <option value="" selected disabled>Seleccione un nivel...</option>
+                        <option value="primaria">Nivel Primario</option>
+                        <option value="secundaria">Nivel Secundario</option>
+                    </select>
+                </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label text-secondary fw-bold small">Edad</label>
-                            <input type="number" name="edadAlumno" class="form-control bg-light" required>
+                            <input type="number" name="edadAlumno" class="form-control bg-light" min="2" max="25" required>
                         </div>
                         <div class="col-md-5 col-6">
                             <label class="form-label text-secondary fw-bold small">CUIL / DNI</label>
-                            <input type="text" name="dniAlumno" class="form-control bg-light" placeholder="Sin guiones" required>
+                            <input type="text" name="dniAlumno" class="form-control bg-light" placeholder="Sin guiones" pattern="[0-9]{6,10}" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-secondary fw-bold small">Tipo de Sangre</label>
                             <select name="tipoSangre" class="form-select bg-light">
+                                <option value="">No sabe / no informa</option>
                                 <option value="A+">A+</option><option value="A-">A-</option>
                                 <option value="B+">B+</option><option value="B-">B-</option>
                                 <option value="AB+">AB+</option><option value="AB-">AB-</option>
@@ -126,7 +128,7 @@
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label text-secondary fw-bold small">Nombre Completo del Responsable</label>
-                            <input type="text" name="nombreTutor" class="form-control bg-light" required>
+                            <input type="text" name="nombreTutor" class="form-control bg-light" minlength="3" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-secondary fw-bold small">Vínculo con el alumno</label>
@@ -138,11 +140,11 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-secondary fw-bold small">Edad</label>
-                            <input type="number" name="edadTutor" class="form-control bg-light" required>
+                            <input type="number" name="edadTutor" class="form-control bg-light" min="18" max="120" required>
                         </div>
                         <div class="col-md-8">
                             <label class="form-label text-secondary fw-bold small">CUIL / DNI</label>
-                            <input type="text" name="dniTutor" class="form-control bg-light" placeholder="Sin guiones" required>
+                            <input type="text" name="dniTutor" class="form-control bg-light" placeholder="Sin guiones" pattern="[0-9]{6,10}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-secondary fw-bold small">Dirección / Domicilio (Si es distinto al alumno)</label>
@@ -191,54 +193,84 @@
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script type="module">
-        import { db } from './js/firebase-config.js';
-        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+    <script>
+    // La preinscripción se guarda por la API, no escribiendo en Firestore desde
+    // el navegador: el visitante no tiene sesión y no debe tener permisos de
+    // escritura. Las validaciones reales están en el backend.
+    (function () {
+        const form = document.getElementById('formPreinscripcion');
+        const msg  = document.getElementById('msgPreinscripcion');
+        const btn  = form.querySelector('[type="submit"]');
 
-        document.querySelector('form').addEventListener('submit', async (e) => {
+        function avisar(texto, tipo) {
+            msg.textContent = texto;
+            msg.className = 'alert alert-' + tipo;
+        }
+
+        form.addEventListener('submit', async function (e) {
             e.preventDefault();
+            msg.classList.add('d-none');
 
-            const fd   = new FormData(e.target);
-            const data = Object.fromEntries(fd.entries());
+            // Honeypot: si el bot llenó el campo invisible, fingimos éxito.
+            if (form.trampa.value) { form.reset(); return; }
 
-            const btn = e.target.querySelector('[type="submit"]');
+            const fd = form.querySelector('[name="nombreAlumno"]').value.trim().length < 3;
+            if (fd) {
+                avisar('Revisá los campos: el nombre del alumno debe tener al menos 3 caracteres.', 'danger');
+                return;
+            }
+
+            const d = new FormData(form);
+            const cuerpo = {
+                trampa: d.get('trampa') || '',
+                alumno: {
+                    nombre:             d.get('nombreAlumno'),
+                    nivel:              d.get('nivel'),
+                    edad:               Number(d.get('edadAlumno')),
+                    dni:                d.get('dniAlumno'),
+                    tipoSangre:         d.get('tipoSangre') || null,
+                    domicilio:          d.get('domicilioAlumno'),
+                    telefonoEmergencia: d.get('telefonoEmergencia')
+                },
+                tutor: {
+                    nombre:    d.get('nombreTutor'),
+                    vinculo:   d.get('vinculo'),
+                    edad:      Number(d.get('edadTutor')),
+                    dni:       d.get('dniTutor'),
+                    domicilio: d.get('domicilioTutor') || null,
+                    telefono:  d.get('telefonoTutor')
+                }
+            };
+
             btn.disabled = true;
             btn.textContent = 'Enviando...';
 
             try {
-                await addDoc(collection(db, 'preinscripciones'), {
-                    alumno: {
-                        nombre:             data.nombreAlumno,
-                        nivel:              data.nivelIngresa,
-                        edad:               Number(data.edadAlumno),
-                        dni:                data.dniAlumno,
-                        tipoSangre:         data.tipoSangre,
-                        domicilio:          data.domicilioAlumno,
-                        telefonoEmergencia: data.telefonoEmergencia
-                    },
-                    tutor: {
-                        nombre:    data.nombreTutor,
-                        vinculo:   data.vinculo,
-                        edad:      Number(data.edadTutor),
-                        dni:       data.dniTutor,
-                        domicilio: data.domicilioTutor || null,
-                        telefono:  data.telefonoTutor
-                    },
-                    estado:   'pendiente',
-                    creadoEn: serverTimestamp()
+                const resp = await fetch('/api/preinscripciones', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cuerpo)
                 });
+                const json = await resp.json();
 
-                alert('¡Preinscripción enviada con éxito! Nos comunicaremos a la brevedad para coordinar la visita presencial.');
-                e.target.reset();
+                if (!resp.ok || !json.ok) {
+                    avisar(json.error || 'No pudimos registrar la preinscripción. Intentá nuevamente.', 'danger');
+                    return;
+                }
+
+                avisar(json.data.mensaje, 'success');
+                form.reset();
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
             } catch (err) {
-                console.error('Error al guardar preinscripción:', err);
-                alert('Error al enviar. Por favor intentá nuevamente.');
+                console.error(err);
+                avisar('No se pudo conectar con el servidor. Revisá tu conexión.', 'danger');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Enviar Preinscripción';
             }
         });
+    })();
     </script>
 </body>
 </html>

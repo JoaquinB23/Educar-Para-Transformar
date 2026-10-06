@@ -71,8 +71,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="dashboard.html">
-                        <span class="material-symbols-outlined me-2">dashboard</span> Dashboard Admin
+                    <a class="nav-link" href="ficha-medica.html" data-roles="admin docente">
+                        <span class="material-symbols-outlined me-2">medical_services</span> Fichas Médicas
                     </a>
                 </li>
             </ul>
@@ -84,9 +84,9 @@
             <!-- Navbar superior -->
             <nav class="navbar-dashboard bg-white shadow-sm px-4 py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <span class="badge badge-docente px-3 py-2 rounded-pill">
-                        <span class="material-symbols-outlined fs-6 align-middle me-1">calendar_today</span> Ciclo Lectivo Actual
-                    </span>
+<span id="badgeCicloDocente" class="badge badge-docente px-3 py-2 rounded-pill">
+                         <span class="material-symbols-outlined fs-6 align-middle me-1">calendar_today</span> Ciclo Lectivo Actual
+                     </span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="d-flex align-items-center gap-2 border-start ps-3">
@@ -203,44 +203,56 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tablaAlumnos">
-                                    <tr data-materia="M001">
-                                        <td><code>A001</code></td>
-                                        <td class="fw-bold">García, Lucía</td>
-                                        <td>Programación I</td>
-                                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="verCalificaciones('A001')">
-                                                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">grading</span> Notas
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr data-materia="M001">
-                                        <td><code>A002</code></td>
-                                        <td class="fw-bold">López, Martín</td>
-                                        <td>Programación I</td>
-                                        <td><span class="badge bg-warning-subtle text-warning border border-warning-subtle">Condicional</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="verCalificaciones('A002')">
-                                                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">grading</span> Notas
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr data-materia="M003">
-                                        <td><code>A003</code></td>
-                                        <td class="fw-bold">Romero, Sofía</td>
-                                        <td>Programación II</td>
-                                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="verCalificaciones('A003')">
-                                                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">grading</span> Notas
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <tr><td colspan="5" class="text-center text-muted py-4">Cargando alumnos...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </section>
+
+<!-- ===== SECCIÓN: Cargar Calificaciones ===== -->
+<section id="seccionCalificaciones" class="mt-5">
+    <div class="card card-dash p-4 bg-white shadow-sm border-0">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-primary">grading</span> Cargar Calificaciones
+            </h5>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <select id="selectMateriaCalificaciones" class="form-select form-select-sm" style="width:auto"></select>
+                <select id="selectTrimestre" class="form-select form-select-sm" style="width:auto">
+                    <option value="1">1° Trimestre</option>
+                    <option value="2">2° Trimestre</option>
+                    <option value="3">3° Trimestre</option>
+                </select>
+            </div>
+        </div>
+
+        <p id="estadoCalificaciones" class="text-muted small mb-3">Elegí una materia y un trimestre.</p>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Legajo</th>
+                        <th>Alumno</th>
+                        <th class="text-center">Nota (0 a 10)</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaCalificacionesDocente">
+                    <tr><td colspan="4" class="text-center text-muted py-4">Seleccioná una materia</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+            <small class="text-muted">Dejá el campo vacío para borrar la nota de ese trimestre.</small>
+            <button id="btnGuardarCalificaciones" class="btn btn-primary rounded-pill px-4 fw-bold">
+                Guardar Notas
+            </button>
+        </div>
+    </div>
+</section>
 
 <!-- ===== SECCIÓN: Tomar Asistencia ===== -->
 <section id="seccionAsistencia" class="mt-5">
@@ -278,23 +290,15 @@
     </div>
 </section>
 
+        </div>
+    </main>
+    </div>
+</div>
+
 <!-- ===== SCRIPTS ===== -->
 <script>
-    // La inicialización de la sesión y la UI se maneja en js/dashboard-docente.js
-
-    // --- Filtro de alumnos por materia ---
-    document.getElementById('filtroMateria').addEventListener('change', function () {
-        const valor = this.value;
-        document.querySelectorAll('#tablaAlumnos tr').forEach(tr => {
-            tr.style.display = (!valor || tr.dataset.materia === valor) ? '' : 'none';
-        });
-    });
-
-    // --- Ver calificaciones (placeholder) ---
-    function verCalificaciones(legajo) {
-        alert(`Calificaciones del alumno ${legajo} — funcionalidad en desarrollo.`);
-    }
-
+    // La inicialización de la sesión y toda la UI (asistencia, calificaciones y
+    // tabla de alumnos) se maneja en js/dashboard-docente.js
 </script>
 
 <script type="module" src="../js/auth-guard.js"></script>

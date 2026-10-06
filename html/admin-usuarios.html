@@ -16,16 +16,38 @@
         .badge-alumno  { background: #cfe2ff; color: #084298; }
         .badge-docente { background: #d1e7dd; color: #0a3622; }
         .badge-familia { background: #fff3cd; color: #664d03; }
+        .badge-admin   { background: #e2e3e5; color: #383d41; }
     </style>
 </head>
 <body>
+
+<!-- Las otras páginas de administración usan un sidebar; esta es angosta y
+     centrada, así que lleva una barra superior con las mismas secciones para que
+     no quede una página sin salida. -->
+<nav class="navbar navbar-expand navbar-dark bg-dark no-print">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.html">
+            <img src="../img/logo.png" width="28" class="bg-white rounded-circle p-1" alt="Logo NovaSYS">
+            <span>Administración</span>
+        </a>
+        <ul class="navbar-nav flex-row flex-wrap gap-1">
+            <li class="nav-item"><a class="nav-link" href="dashboard.html"><span class="material-symbols-outlined me-1">dashboard</span> Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" href="admin-alumnos.html"><span class="material-symbols-outlined me-1">school</span> Alumnos</a></li>
+            <li class="nav-item"><a class="nav-link" href="admin-materias.html"><span class="material-symbols-outlined me-1">menu_book</span> Materias</a></li>
+            <li class="nav-item"><a class="nav-link active" href="admin-usuarios.html" aria-current="page"><span class="material-symbols-outlined me-1">group</span> Usuarios</a></li>
+            <li class="nav-item"><a class="nav-link" href="admin-preinscripciones.html"><span class="material-symbols-outlined me-1">how_to_reg</span> Preinscripciones</a></li>
+            <li class="nav-item"><a class="nav-link" href="admin-noticias.html"><span class="material-symbols-outlined me-1">campaign</span> Noticias</a></li>
+        </ul>
+    </div>
+</nav>
 
 <div class="container py-5" style="max-width: 680px;">
 
     <div class="text-center mb-4">
         <span class="material-symbols-outlined fs-1 text-primary">manage_accounts</span>
         <h3 class="fw-bold text-primary mt-1">Administración de Usuarios</h3>
-        <p class="text-muted small">Creá cuentas para alumnos, docentes y tutores</p>
+        <p class="text-muted small">Creá cuentas para alumnos, docentes, tutores y administradores</p>
+        <p id="msgAcceso" class="alert alert-danger d-none py-2 small"></p>
     </div>
 
     <div class="card shadow-sm border-0 mb-4">
@@ -59,31 +81,38 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary">Rol</label>
                     <div class="row g-2">
-                        <div class="col-4">
+                        <div class="col-3">
                             <input type="radio" class="btn-check" name="rol" id="rolAlumno" value="alumno" required>
                             <label class="btn btn-outline-primary w-100 role-card text-center py-2" for="rolAlumno">
                                 <span class="material-symbols-outlined d-block mb-1">school</span>
                                 <span class="small fw-bold">Alumno</span>
                             </label>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <input type="radio" class="btn-check" name="rol" id="rolDocente" value="docente">
                             <label class="btn btn-outline-primary w-100 role-card text-center py-2" for="rolDocente">
                                 <span class="material-symbols-outlined d-block mb-1">local_library</span>
                                 <span class="small fw-bold">Docente</span>
                             </label>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <input type="radio" class="btn-check" name="rol" id="rolFamilia" value="familia">
                             <label class="btn btn-outline-primary w-100 role-card text-center py-2" for="rolFamilia">
                                 <span class="material-symbols-outlined d-block mb-1">family_restroom</span>
                                 <span class="small fw-bold">Familia</span>
                             </label>
                         </div>
+                        <div class="col-3">
+                            <input type="radio" class="btn-check" name="rol" id="rolAdmin" value="admin">
+                            <label class="btn btn-outline-primary w-100 role-card text-center py-2" for="rolAdmin">
+                                <span class="material-symbols-outlined d-block mb-1">admin_panel_settings</span>
+                                <span class="small fw-bold">Admin</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
-                <div id="nivelContainer" class="mb-4">
+                <div id="nivelContainer" class="mb-3">
                     <label class="form-label fw-bold small text-secondary">Nivel</label>
                     <div class="row g-2">
                         <div class="col-6">
@@ -101,6 +130,11 @@
                     </div>
                 </div>
 
+                <div id="legajoContainer" class="mb-3 d-none">
+                    <label class="form-label fw-bold small text-secondary">Legajo</label>
+                    <input type="text" id="legajo" class="form-control" placeholder="Ej: A004 / D003">
+                </div>
+
                 <div id="msgError" class="alert alert-danger d-none py-2 small"></div>
 
                 <button type="submit" id="btnCrear" class="btn btn-primary w-100 fw-bold py-2">
@@ -112,14 +146,15 @@
     </div>
 
     <div id="listaUsuarios">
-        <h6 class="fw-bold text-secondary mb-3">Usuarios creados en esta sesión</h6>
+        <h6 class="fw-bold text-secondary mb-3">Usuarios de la institución</h6>
         <div id="itemsUsuarios" class="d-flex flex-column gap-2"></div>
-        <p id="sinUsuarios" class="text-muted small text-center mt-2">Todavía no creaste ningún usuario.</p>
+        <p id="sinUsuarios" class="text-muted small text-center mt-2">Todavía no hay usuarios cargados.</p>
     </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="../js/auth-guard.js"></script>
 <script type="module" src="../js/admin-usuarios.js"></script>
 </body>
 </html>

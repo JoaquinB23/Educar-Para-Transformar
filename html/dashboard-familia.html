@@ -17,38 +17,33 @@
         <aside class="col-md-2 d-none d-md-block sidebar p-0 vh-100 position-sticky top-0">
             <div class="p-4 text-center border-bottom border-secondary">
                 <span class="material-symbols-outlined display-4 text-white mb-2">family_home</span>
-                <h5 class="text-white mb-0">Familia Fernández</h5>
+                <h5 id="txtNombreFamilia" class="text-white mb-0">Familia</h5>
                 <small class="text-white-50">Portal de Tutores</small>
             </div>
-            
-            <ul class="nav flex-column mt-3">
-                <li class="nav-item"><a class="nav-link active" href="dashboard-padre.html"><span class="material-symbols-outlined me-2">dashboard</span> Inicio</a></li>
-                
-                <div class="sidebar-heading">Mis Hijos</div>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="hijo-primaria.html">
-                        <span class="material-symbols-outlined fs-5">face</span> Tomás (Primaria)
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="hijo-secundaria.html">
-                        <span class="material-symbols-outlined fs-5">face_4</span> Sofía (Secundaria)
-                    </a>
-                </li>
 
-                <div class="sidebar-heading">Gestión</div>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="material-symbols-outlined me-2">payments</span> Estado de Cuenta</a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="material-symbols-outlined me-2">mail</span> Mensajes <span class="badge bg-danger ms-2">1</span></a></li>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item"><a class="nav-link active" href="dashboard-familia.html"><span class="material-symbols-outlined me-2">dashboard</span> Inicio</a></li>
+
+                <div class="sidebar-heading">Mis Hijos</div>
+                <div id="listaHijos"></div>
+
+                <div class="sidebar-heading">Avisos</div>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard-familia.html#avisos">
+                        <span class="material-symbols-outlined me-2">campaign</span> Notificaciones
+                        <span class="badge bg-danger ms-2 badge-notif d-none">0</span>
+                    </a>
+                </li>
             </ul>
         </aside>
 
         <main class="col-md-10 main-content p-0">
             <nav class="navbar-dashboard bg-white shadow-sm px-4 py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold">Ciclo Lectivo 2027</span>
+                    <span id="badgeCicloFamilia" class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold">Ciclo Lectivo 2025</span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <span class="fw-bold small text-dark d-none d-sm-inline">Roberto Fernández (Tutor)</span>
+                    <span id="navNombreTutor" class="fw-bold small text-dark d-none d-sm-inline">Cargando...</span>
                     <button onclick="window.cerrarSesion()" class="btn btn-outline-danger btn-sm rounded-pill fw-bold ms-2">Salir</button>
                 </div>
             </nav>
@@ -56,35 +51,78 @@
             <div class="p-4 p-md-5">
                 <header class="mb-5 dash-reveal">
                     <h1 class="h3 fw-bold mb-1">Resumen Familiar</h1>
-                    <p class="text-muted mb-0">Revisá las notificaciones generales y el estado de cuenta.</p>
+                    <p class="text-muted mb-0">Revisá los avisos automáticos y el estado de tus hijos.</p>
                 </header>
 
                 <div class="row g-4">
-                    <div class="col-md-8 dash-reveal delay-100">
+                      <div class="col-md-8 dash-reveal delay-100" id="avisos">
                         <div class="card card-dash p-4 bg-white border-0 shadow-sm">
-                            <h5 class="fw-bold mb-4 text-primary d-flex align-items-center gap-2"><span class="material-symbols-outlined">campaign</span> Avisos Institucionales</h5>
-                            <div class="alert alert-info border-0 rounded-4">
-                                <strong>Reunión de Padres:</strong> El próximo viernes 15 se realizará la reunión informativa del Nivel Secundario.
-                            </div>
-                            <div class="alert alert-success border-0 rounded-4 mb-0">
-                                <strong>Deportes:</strong> Ya están abiertos los cupos para las olimpiadas intercolegiales de Atletismo.
+                            <h5 class="fw-bold mb-4 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">campaign</span> Avisos y Notificaciones
+                            </h5>
+                            <div id="contenedorNotificaciones">
+                                <p class="text-muted mb-0">Cargando avisos...</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 dash-reveal delay-200">
-                        <div class="card card-dash p-4 bg-white border-0 shadow-sm text-center h-100">
-                            <h6 class="text-muted text-uppercase small fw-bold mb-3">Estado de Aranceles</h6>
-                            <span class="material-symbols-outlined display-1 text-success mb-2">check_circle</span>
-                            <h4 class="fw-bold text-dark">Cuota al Día</h4>
-                            <p class="text-secondary small">Próximo vencimiento: 1 al 10 del mes siguiente.</p>
-                            <button class="btn btn-outline-primary rounded-pill w-100 mt-2">Ver Comprobantes</button>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </main>
     </div>
 </div>
+
 <script type="module" src="../js/auth-guard.js"></script>
+<script src="../js/notificaciones.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // El sidebar y el nombre del tutor salen del perfil real, y los hijos de
+    // los vínculos hijoPrimariaId / hijoSecundariaId que guarda crear-usuario.js
+    // o el panel de administración.
+    document.addEventListener('DOMContentLoaded', async () => {
+        await window.authReady;
+
+        try {
+            const resp = await window.fetchConAuth('/api/auth/me');
+            if (!resp.ok) return;
+            const { data: perfil } = await resp.json();
+
+            const nombre = window.nombreCompleto(perfil);
+            const apellido = window.apellidoDe(perfil);
+            document.getElementById('txtNombreFamilia').innerText = apellido ? `Familia ${apellido}` : (nombre || 'Familia');
+            document.getElementById('navNombreTutor').innerText = nombre || 'Tutor';
+            document.getElementById('badgeCicloFamilia').innerText = `Ciclo Lectivo ${perfil.cicloLectivoActual}`;
+
+            const hijos = [
+                { alumnoId: perfil.hijoPrimariaId, nivel: 'Primaria', pagina: 'hijo-primaria.html' },
+                { alumnoId: perfil.hijoSecundariaId, nivel: 'Secundaria', pagina: 'hijo-secundaria.html' },
+            ].filter((h) => h.alumnoId);
+
+            const cont = document.getElementById('listaHijos');
+            if (hijos.length === 0) {
+                cont.innerHTML = '<li class="nav-item"><span class="nav-link text-white-50 small">Sin hijos vinculados</span></li>';
+                return;
+            }
+
+            const alumnos = await Promise.all(hijos.map(async (h) => {
+                const r = await window.fetchConAuth(`/api/alumnos/${h.alumnoId}`);
+                return r.ok ? (await r.json()).data : null;
+            }));
+
+            cont.innerHTML = hijos.map((h, i) => {
+                const a = alumnos[i];
+                const icono = h.nivel === 'Primaria' ? 'face' : 'face_4';
+                const label = a ? `${a.nombre} (${h.nivel})` : `Hijo/a (${h.nivel})`;
+                return `<li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="${h.pagina}">
+                        <span class="material-symbols-outlined fs-5">${icono}</span> ${label}
+                    </a>
+                </li>`;
+            }).join('');
+        } catch (err) {
+            console.error('Error armando el sidebar de familia:', err);
+        }
+    });
+</script>
 </body>
 </html>

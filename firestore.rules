@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// Reglas de Firestore del proyecto escuela1-cc5ed.
+//
+// El principio es simple: el navegador NUNCA escribe datos, y tampoco los lee
+// salvo para ver su propio perfil. Todo lo demás pasa por el backend Express,
+// que usa el Admin SDK y por lo tanto ignora estas reglas por completo.
+//
+// Esto cierra el agujero que había antes: `html/login.html` leía
+// `usuarios/{uid}` desde el cliente, así que sin reglas cualquier persona que
+// supiera un UID podía leer el perfil y el rol de otro usuario.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Perfiles ────────────────────────────────────────────────────────────
+    //
+    // El login necesita leer el perfil para validar rol y nivel. Se permite
+    // sólo el documento que le corresponde a quien está autenticado.
+    match /usuarios/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // El alta y la modificación de usuarios las hace
+      // `Backend/crear-usuario.js` y `POST /api/admin/usuarios`, que corren con
+      // credenciales de servicio. Desde el cliente no se escribe nada: si no,
+      // cualquiera podría auto-asignarse el rol admin.
+      allow write: if false;
+    }
+
+    // ─── Todo lo demás ───────────────────────────────────────────────────────
+    //
+    // Estas colecciones las lee y escribe exclusivamente el backend:
+    //
+    //   alumnos         → /api/alumnos
+    //   docentes        → /api/docentes
+    //   materias        → /api/materias, /api/horarios/grilla
+    //   inscripciones   → /api/inscripciones
+    //   horarios        → /api/horarios
+    //   calificaciones  → /api/calificaciones, /api/boletin
+    //   asistencias     → /api/asistencias
+    //   fichasMedicas   → /api/fichas-medicas
+    //   atenciones      → /api/fichas-medicas/:id/atencion
+    //   notificaciones  → /api/notificaciones
+    //   noticias        → /api/noticias
+    //   preinscripciones→ /api/preinscripciones
+    //
+    // La denied explícita es la regla por defecto: aunque mañana alguien agrega
+    // una colección nueva y se le olvida escribirla, sigue cerrada para el
+    // cliente en vez de quedar abierta.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

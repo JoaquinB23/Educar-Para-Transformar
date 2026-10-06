@@ -23,6 +23,7 @@
             <ul class="nav flex-column mt-3">
                 <li class="nav-item"><a class="nav-link" href="dashboard-alumno.html"><span class="material-symbols-outlined me-2">school</span> Mis Materias</a></li>
                 <li class="nav-item"><a class="nav-link active" href="calificaciones.html"><span class="material-symbols-outlined me-2">task_alt</span> Calificaciones</a></li>
+                <li class="nav-item"><a class="nav-link" href="ficha-medica.html"><span class="material-symbols-outlined me-2">medical_information</span> Ficha Médica</a></li>
                 <li class="nav-item"><a class="nav-link" href="horarios.html"><span class="material-symbols-outlined me-2">calendar_month</span> Horarios y Fechas</a></li>
             </ul>
         </aside>
@@ -30,7 +31,7 @@
         <main class="col-md-10 main-content p-0">
             <nav class="navbar-dashboard bg-white shadow-sm px-4 py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+                    <span id="badgeCiclo" class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
                         <span class="material-symbols-outlined fs-6 align-middle me-1">calendar_today</span> Ciclo Lectivo Actual
                     </span>
                 </div>
@@ -44,9 +45,9 @@
             </nav>
 
             <div class="p-4 p-md-5">
-                <header class="mb-5">
+                <header class="mb-4">
                     <h1 class="h3 fw-bold mb-1">Boletín de Calificaciones</h1>
-                    <p class="text-muted mb-0">Nivel Secundario - Ciclo Básico</p>
+                    <p class="text-muted mb-0" id="subtituloCiclo">Cargando tus notas...</p>
                 </header>
 
                 <div class="card card-dash p-4 bg-white shadow-sm border-0">
@@ -54,7 +55,9 @@
                         <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
                             <span class="material-symbols-outlined text-success">analytics</span> Reporte de Rendimiento
                         </h5>
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-1"><span class="material-symbols-outlined fs-6">download</span> Descargar PDF</button>
+                        <button id="btnRefrescar" class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-1">
+                            <span class="material-symbols-outlined fs-6">refresh</span> Actualizar
+                        </button>
                     </div>
 
                     <div class="table-responsive">
@@ -69,78 +72,30 @@
                                     <th>Estado</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="tablaCalificaciones">
                                 <tr>
-                                    <td class="text-start fw-bold">Matemática I</td>
-                                    <td>8.50</td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td class="fw-bold">8.50</td>
-                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-bold">Prácticas del Lenguaje</td>
-                                    <td>9.00</td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td class="fw-bold">9.00</td>
-                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-bold">Ciencias Biológicas</td>
-                                    <td class="text-danger fw-bold">5.50</td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td class="fw-bold">5.50</td>
-                                    <td><span class="badge bg-warning-subtle text-warning border border-warning-subtle">Riesgo</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-bold">Geografía General</td>
-                                    <td>7.00</td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td class="fw-bold">7.00</td>
-                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-bold text-primary">Inglés (Nivel Intermedio)</td>
-                                    <td>10.00</td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td class="fw-bold text-primary">10.00</td>
-                                    <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">Promocionado</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-bold">Educación Física</td>
-                                    <td>8.00</td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td><span class="text-muted">-</span></td>
-                                    <td class="fw-bold">8.00</td>
-                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">Regular</span></td>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <div class="spinner-border text-primary" role="status"></div>
+                                        <p class="mt-2 mb-0">Cargando boletín...</p>
+                                    </td>
                                 </tr>
                             </tbody>
+                            <tfoot id="pieCalificaciones" class="d-none"></tfoot>
                         </table>
                     </div>
+
+                    <p class="text-muted small mt-3 mb-0">
+                        El promedio sale de los trimestres que el docente ya cargó. Si figura
+                        <strong>Promocionado</strong> es porque llegaste a 10; <strong>Riesgo</strong> es un promedio menor a 6.
+                    </p>
                 </div>
             </div>
         </main>
     </div>
 </div>
 
-<script>
-    // Conexión de seguridad (idéntica a tu dashboard)
-    const usuario = JSON.parse(localStorage.getItem('usuario'));
-    if (!usuario) {
-        window.location.href = 'login.html';
-    } else {
-        document.getElementById('txtNombreSidebar').innerText = usuario.nombre;
-        document.getElementById('navNombreAlumno').innerText = usuario.nombre;
-    }
-    document.getElementById('btnCerrarSesionTop').addEventListener('click', () => {
-        localStorage.removeItem('usuario');
-        window.location.href = 'login.html';
-    });
-</script>
+<script type="module" src="../js/auth-guard.js"></script>
+<script src="../js/calificaciones.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

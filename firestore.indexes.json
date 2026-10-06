@@ -1,0 +1,6 @@
+{
+  "//": "Índices compuestos para consultas que usan dos o más filtros.",
+  "//nota": "Las consultas del backend se ejecutan con el Admin SDK, que no depende de estos índices para los casos simples, pero los composites_evitan el error 'The query requires an index'. Se crean con: firebase deploy --only firestore:indexes",
+  "indexes": [],
+  "fieldOverrides": []
+}
