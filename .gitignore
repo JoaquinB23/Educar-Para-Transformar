@@ -17,3 +17,8 @@ firestore-debug.log
 ui-debug.log
 # El service account con la clave privada nunca va al repo
 *serviceAccount*.json
+
+
+# Backups locales: si queda trackeado se desincroniza del archivo real
+# (API_Server.js.bak tenía 311 líneas y la API ya va por 1794)
+*.bak
