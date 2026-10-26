@@ -21,9 +21,10 @@
                 <small class="text-white-50">Salud Escolar</small>
             </div>
             <ul class="nav flex-column mt-3">
-                <li class="nav-item"><a class="nav-link" href="dashboard-alumno.html" data-roles="alumno admin"><span class="material-symbols-outlined me-2">school</span> Portal Alumno</a></li>
-                <li class="nav-item"><a class="nav-link" href="dashboard-docente.html" data-roles="docente admin"><span class="material-symbols-outlined me-2">local_library</span> Portal Docente</a></li>
-                <li class="nav-item"><a class="nav-link" href="dashboard-familia.html" data-roles="familia admin"><span class="material-symbols-outlined me-2">family_restroom</span> Portal Familia</a></li>
+                <li class="nav-item"><a class="nav-link" href="dashboard-alumno.html" data-roles="alumno"><span class="material-symbols-outlined me-2">school</span> Portal Alumno</a></li>
+                <li class="nav-item"><a class="nav-link" href="dashboard-docente.html" data-roles="docente"><span class="material-symbols-outlined me-2">local_library</span> Portal Docente</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin-docentes.html" data-roles="admin"><span class="material-symbols-outlined me-2">co_present</span> Gestión de Docentes</a></li>
+                <li class="nav-item"><a class="nav-link" href="dashboard-familia.html" data-roles="familia"><span class="material-symbols-outlined me-2">family_restroom</span> Portal Familia</a></li>
                 <li class="nav-item mt-3 border-top border-white border-opacity-10 pt-3">
                     <a class="nav-link" href="dashboard.html" data-roles="admin"><span class="material-symbols-outlined me-2">arrow_back</span> Administración</a>
                 </li>
@@ -55,18 +56,18 @@
                     </div>
                 </header>
 
-                <!-- Aviso de que el usuario no tiene nada vinculado todavía -->
-                <div id="msgSinVinculo" class="alert alert-info d-none">
-                    <strong>Sin alumno seleccionado.</strong>
-                    <span id="msgSinVinculoDetalle"></span>
-                </div>
-
                 <!-- Selector para administración / docentes -->
                 <div id="panelBuscador" class="card card-dash p-4 bg-white shadow-sm border-0 mb-4 d-none">
                     <h6 class="fw-bold mb-3">Buscar alumno</h6>
                     <input type="text" id="inputBuscarAlumno" class="form-control mb-2"
                            placeholder="Escribí el nombre, apellido o legajo...">
                     <div id="resultadosAlumno" class="list-group"></div>
+                </div>
+
+                <!-- Aviso para cuentas sin alumno propio o fichas todavía no creadas -->
+                <div id="msgSinVinculo" class="alert alert-info d-none">
+                    <strong id="txtEstadoFicha">Sin alumno seleccionado.</strong>
+                    <span id="msgSinVinculoDetalle"></span>
                 </div>
 
                 <div id="contenidoFicha" class="d-none">

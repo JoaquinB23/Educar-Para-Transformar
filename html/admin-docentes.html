@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docentes | Educar para Transformar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    <link rel="icon" href="../img/logo.png" type="image/png">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body class="bg-light pt-0 m-0" data-required-roles="admin">
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <aside class="col-md-2 d-none d-md-block sidebar p-0 vh-100 position-sticky top-0">
+            <div class="p-4 text-center">
+                <img src="../img/logo.png" width="50" class="mb-2 bg-white rounded-circle p-1" alt="Logo de la institución">
+                <h5 class="text-white mb-0">Administración</h5>
+            </div>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item"><a class="nav-link" href="dashboard.html"><span class="material-symbols-outlined me-2">dashboard</span> Inicio</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin-alumnos.html"><span class="material-symbols-outlined me-2">school</span> Alumnos</a></li>
+                <li class="nav-item"><a class="nav-link active" href="admin-docentes.html" aria-current="page"><span class="material-symbols-outlined me-2">co_present</span> Docentes</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin-materias.html"><span class="material-symbols-outlined me-2">menu_book</span> Materias</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin-inscripciones.html"><span class="material-symbols-outlined me-2">assignment</span> Inscripciones</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin-usuarios.html"><span class="material-symbols-outlined me-2">group</span> Usuarios</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin-preinscripciones.html"><span class="material-symbols-outlined me-2">how_to_reg</span> Preinscripciones</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin-noticias.html"><span class="material-symbols-outlined me-2">campaign</span> Noticias</a></li>
+                <li class="nav-item"><a class="nav-link" href="ficha-medica.html"><span class="material-symbols-outlined me-2">medical_information</span> Fichas Médicas</a></li>
+            </ul>
+        </aside>
+
+        <main class="col-md-10 main-content p-0">
+            <nav class="navbar-dashboard bg-white shadow-sm px-4 py-3 d-flex justify-content-between align-items-center">
+                <span id="badgeCicloDocentes" class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold">Ciclo lectivo 2025</span>
+                <div class="d-flex align-items-center gap-3">
+                    <span id="navNombreDocentes" class="fw-bold small text-dark d-none d-sm-inline">Cargando...</span>
+                    <button onclick="window.cerrarSesion()" class="btn btn-outline-danger btn-sm rounded-pill fw-bold ms-2">Salir</button>
+                </div>
+            </nav>
+
+            <div class="p-4 p-md-5">
+                <div id="msgAccesoDocentes" class="alert alert-danger d-none" role="alert"></div>
+                <div id="msgDocentes" class="alert d-none" role="alert"></div>
+                <header class="mb-4 d-flex justify-content-between align-items-end flex-wrap gap-3">
+                    <div>
+                        <h1 class="h3 fw-bold mb-1">Gestión de docentes</h1>
+                        <p class="text-muted mb-0">Administrá perfiles, asignaciones de materias y alumnos por curso.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="admin-usuarios.html" class="btn btn-primary rounded-pill px-3 fw-bold">
+                            <span class="material-symbols-outlined align-middle me-1" style="font-size:18px">person_add</span> Crear cuenta docente
+                        </a>
+                        <button id="btnRefrescarDocentes" class="btn btn-outline-secondary rounded-pill px-3">
+                            <span class="material-symbols-outlined align-middle me-1" style="font-size:16px">refresh</span> Refrescar
+                        </button>
+                    </div>
+                </header>
+
+                <section class="card card-dash p-3 bg-white shadow-sm border-0 mb-4" aria-label="Filtros de docentes">
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <label class="form-label small fw-bold text-secondary" for="buscarDocente">Buscar</label>
+                            <input id="buscarDocente" type="search" class="form-control" placeholder="Nombre, apellido o legajo">
+                        </div>
+                        <div class="col-sm-6 col-lg-2">
+                            <label class="form-label small fw-bold text-secondary" for="filtroNivelDocente">Nivel</label>
+                            <select id="filtroNivelDocente" class="form-select">
+                                <option value="todos">Todos los niveles</option>
+                                <option value="primaria">Primaria</option>
+                                <option value="secundaria">Secundaria</option>
+                                <option value="sin">Sin nivel asignado</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6 col-lg-2">
+                            <label class="form-label small fw-bold text-secondary" for="filtroEstadoDocente">Estado</label>
+                            <select id="filtroEstadoDocente" class="form-select">
+                                <option value="todos">Todos</option>
+                                <option value="activo">Activos</option>
+                                <option value="inactivo">Inactivos</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6 col-lg-4">
+                            <label class="form-label small fw-bold text-secondary" for="filtroMateriaDocente">Materia</label>
+                            <select id="filtroMateriaDocente" class="form-select">
+                                <option value="todas">Todas las materias</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2">
+                            <label class="form-label small fw-bold text-secondary" for="cicloDocente">Ciclo lectivo</label>
+                            <input id="cicloDocente" class="form-control" type="number" min="2000" max="2100" step="1" value="2025">
+                        </div>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0">El nivel se obtiene de las materias asignadas. Cambiá el docente responsable en la materia que querés reasignar.</p>
+                </section>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 fw-bold mb-0">Docentes y carga académica</h2>
+                    <span id="contadorDocentes" class="text-muted small">Cargando...</span>
+                </div>
+                <div id="listaDocentes" class="d-flex flex-column gap-3">
+                    <div class="card card-dash p-4 bg-white shadow-sm border-0 text-center text-muted">Cargando docentes...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditarDocente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5 fw-bold">Editar docente</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="formEditarDocente">
+                <div class="modal-body">
+                    <input type="hidden" id="docenteId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary" for="docenteNombre">Nombre</label>
+                            <input id="docenteNombre" class="form-control" maxlength="80" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary" for="docenteApellido">Apellido</label>
+                            <input id="docenteApellido" class="form-control" maxlength="80" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary" for="docenteLegajo">Legajo</label>
+                            <input id="docenteLegajo" class="form-control" maxlength="30" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary" for="docenteEmail">Email de acceso</label>
+                            <input id="docenteEmail" class="form-control" type="email" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary" for="docenteEstado">Estado</label>
+                            <select id="docenteEstado" class="form-select">
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="errorFormularioDocente" class="alert alert-danger d-none py-2 small mt-3 mb-0"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button id="btnGuardarDocente" type="submit" class="btn btn-primary rounded-pill px-4">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="../js/auth-guard.js"></script>
+<script src="../js/admin-docentes.js"></script>
+</body>
+</html>

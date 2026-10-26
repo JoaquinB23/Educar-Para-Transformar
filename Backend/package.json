@@ -5,7 +5,12 @@
   "main": "API_Server.js",
   "scripts": {
     "start": "node API_Server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "node scripts/lint.cjs",
+    "format:check": "prettier --check package.json ../eslint.config.mjs jest.config.cjs cypress.config.cjs tests/**/*.js cypress/**/*.js ../docs/TP_Unidad5.md ../.github/pull_request_template.md ../.github/workflows/ci.yml",
+    "test": "jest --runInBand",
+    "test:coverage": "jest --coverage --runInBand",
+    "test:e2e": "cypress run",
+    "prepare": "cd .. && husky"
   },
   "keywords": [],
   "author": "",
@@ -23,10 +28,24 @@
     "express": "^5.2.1",
     "firebase-admin": "^12.6.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@firebase/util",
-      "protobufjs"
+  "lint-staged": {
+    "*.{js,cjs,mjs}": [
+      "node scripts/lint.cjs"
+    ],
+    "*.{json,md,yml}": [
+      "prettier --write"
     ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "cypress": "^15.21.1",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "jest": "^30.5.2",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.9.10",
+    "supertest": "^7.3.1"
   }
 }

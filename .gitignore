@@ -4,6 +4,7 @@
 .env
 js/env.js
 Backend/.env
+Backend/coverage/
 
 
 #Ignore vscode AI rules

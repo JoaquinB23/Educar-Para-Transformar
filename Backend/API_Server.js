@@ -308,6 +308,21 @@ app.get("/api/docentes", verifyToken, requireRole("admin"), async (req, res) => 
   }
 });
 
+// GET /api/docentes/alumnos — docentes: alumnos inscriptos en sus materias
+// del ciclo actual, para gestión de fichas médicas.
+app.get("/api/docentes/alumnos", verifyToken, requireRole("docente"), async (req, res) => {
+  try {
+    if (!req.perfil.docenteId) {
+      return fail(res, "La cuenta no está vinculada a un registro de docente", 403);
+    }
+
+    const alumnos = await alumnosDeMateriasDelDocente(req.perfil.docenteId);
+    ok(res, alumnos);
+  } catch (err) {
+    fail(res, "Error al listar los alumnos de tus materias: " + err.message, 500);
+  }
+});
+
 app.get("/api/docentes/:id", verifyToken, requireRole("admin"), async (req, res) => {
   try {
     const doc = await db.collection("docentes").doc(req.params.id).get();
@@ -341,8 +356,33 @@ app.put("/api/docentes/:id", verifyToken, requireRole("admin"), async (req, res)
     const doc = await ref.get();
     if (!doc.exists) return fail(res, "Docente no encontrado", 404);
 
-    const { id: _ignored, ...cambios } = req.body;
-    await ref.update(cambios);
+    const nombre = textoLimpio(req.body?.nombre, 80);
+    const apellido = textoLimpio(req.body?.apellido, 80);
+    const legajo = textoLimpio(req.body?.legajo, 30).toUpperCase();
+    const estado = textoLimpio(req.body?.estado, 20).toLowerCase();
+    if (!nombre || !apellido || !legajo || !estado)
+      return fail(res, "Faltan campos obligatorios: nombre, apellido, legajo, estado");
+    if (!["activo", "inactivo"].includes(estado))
+      return fail(res, "Estado inválido. Valores permitidos: activo, inactivo");
+
+    const duplicado = await db.collection("docentes").where("legajo", "==", legajo).get();
+    if (duplicado.docs.some((docente) => docente.id !== req.params.id))
+      return fail(res, `Ya existe otro docente con el legajo ${legajo}`);
+
+    const batch = db.batch();
+    batch.update(ref, { nombre, apellido, legajo, estado });
+    const perfiles = await db.collection("usuarios")
+      .where("docenteId", "==", req.params.id)
+      .get();
+    for (const perfil of perfiles.docs) {
+      batch.update(perfil.ref, {
+        nombre,
+        apellido,
+        actualizadoEn: new Date().toISOString(),
+      });
+    }
+    await batch.commit();
+
     const actualizado = await ref.get();
     ok(res, withId(actualizado));
   } catch (err) {
@@ -929,15 +969,100 @@ app.put("/api/notificaciones/:id/leida", verifyToken, async (req, res) => {
 // Un documento por alumno (el ID del documento es el alumnoId) con un array
 // `atenciones`. Así toda la ficha se lee con un solo get.
 
+async function docenteTieneAccesoAlumno(docenteId, alumnoId) {
+  if (!docenteId || !alumnoId) return false;
+
+  const [materiasDocente, inscripcionesAlumno] = await Promise.all([
+    db.collection("materias").where("docenteId", "==", docenteId).get(),
+    db.collection("inscripciones")
+      .where("alumnoId", "==", alumnoId)
+      .where("cicloLectivo", "==", CICLO_LECTIVO)
+      .get(),
+  ]);
+  const materiasInscripto = new Set(
+    inscripcionesAlumno.docs.map((inscripcion) => inscripcion.data().materiaId)
+  );
+
+  return materiasDocente.docs.some((materia) =>
+    Number(materia.data().cicloLectivo) === CICLO_LECTIVO &&
+    materiasInscripto.has(materia.id)
+  );
+}
+
+async function docenteTieneAccesoFicha(req, res, alumnoId) {
+  if (req.perfil?.rol !== "docente") return true;
+  const permitido = await docenteTieneAccesoAlumno(req.perfil.docenteId, alumnoId);
+  if (permitido) return true;
+
+  fail(res, "Sólo podés acceder a fichas de alumnos inscriptos en tus materias del ciclo lectivo actual", 403);
+  return false;
+}
+
+async function alumnosDeMateriasDelDocente(docenteId) {
+  if (!docenteId) return [];
+
+  const [materiasDocente, inscripcionesCiclo] = await Promise.all([
+    db.collection("materias").where("docenteId", "==", docenteId).get(),
+    db.collection("inscripciones").where("cicloLectivo", "==", CICLO_LECTIVO).get(),
+  ]);
+  const materias = new Map(
+    materiasDocente.docs
+      .map((materia) => [materia.id, withId(materia)])
+      .filter(([, materia]) => Number(materia.cicloLectivo) === CICLO_LECTIVO)
+  );
+  const materiasPorAlumno = new Map();
+  for (const inscripcion of inscripcionesCiclo.docs) {
+    const data = inscripcion.data();
+    const materia = materias.get(data.materiaId);
+    if (!materia) continue;
+
+    if (!materiasPorAlumno.has(data.alumnoId)) materiasPorAlumno.set(data.alumnoId, new Map());
+    materiasPorAlumno.get(data.alumnoId).set(materia.id, {
+      id: materia.id,
+      codigo: materia.codigo || "",
+      nombre: materia.nombre || "",
+      nivel: materia.nivel || null,
+    });
+  }
+
+  return Promise.all([...materiasPorAlumno.entries()].map(async ([alumnoId, materiasAlumno]) => {
+    const alumnoDoc = await db.collection("alumnos").doc(alumnoId).get();
+    if (!alumnoDoc.exists) return null;
+    const alumno = withId(alumnoDoc);
+    return {
+      id: alumno.id,
+      nombre: alumno.nombre || "",
+      apellido: alumno.apellido || "",
+      legajo: alumno.legajo || null,
+      nivel: alumno.nivel || null,
+      estado: alumno.estado || null,
+      materias: [...materiasAlumno.values()],
+    };
+  })).then((alumnos) => alumnos
+    .filter(Boolean)
+    .sort((a, b) => `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, "es")));
+}
+
 app.get("/api/fichas-medicas", verifyToken, async (req, res) => {
   try {
     const alumnoId = req.query.alumnoId;
     if (!alumnoId) return fail(res, "Falta el query param alumnoId");
 
-    const fichaDoc = await db.collection("fichasMedicas").doc(alumnoId).get();
     const alumnoDoc = await db.collection("alumnos").doc(alumnoId).get();
     if (!alumnoDoc.exists) return fail(res, "Alumno no encontrado", 404);
 
+    if (req.perfil?.rol === "docente") {
+      if (!await docenteTieneAccesoFicha(req, res, alumnoId)) return;
+    } else if (req.perfil?.rol === "alumno") {
+      if (req.perfil.alumnoId !== alumnoId) return fail(res, "Sólo podés consultar tu propia ficha médica", 403);
+    } else if (req.perfil?.rol === "familia") {
+      if (![req.perfil.hijoPrimariaId, req.perfil.hijoSecundariaId].includes(alumnoId))
+        return fail(res, "Sólo podés consultar la ficha médica de tus hijos vinculados", 403);
+    } else if (req.perfil?.rol !== "admin") {
+      return fail(res, "No tenés permisos para consultar fichas médicas", 403);
+    }
+
+    const fichaDoc = await db.collection("fichasMedicas").doc(alumnoId).get();
     if (!fichaDoc.exists) {
       return ok(res, {
         alumno: withId(alumnoDoc),
@@ -969,6 +1094,7 @@ app.post("/api/fichas-medicas", verifyToken, requireRole("admin", "docente"), as
 
     const alumnoDoc = await db.collection("alumnos").doc(alumnoId).get();
     if (!alumnoDoc.exists) return fail(res, "Alumno no encontrado", 404);
+    if (!await docenteTieneAccesoFicha(req, res, alumnoId)) return;
 
     const ref = db.collection("fichasMedicas").doc(alumnoId);
     const fichaDoc = await ref.get();
@@ -1010,6 +1136,7 @@ app.post("/api/fichas-medicas/:alumnoId/atenciones", verifyToken, requireRole("a
 
     const alumnoDoc = await db.collection("alumnos").doc(alumnoId).get();
     if (!alumnoDoc.exists) return fail(res, "Alumno no encontrado", 404);
+    if (!await docenteTieneAccesoFicha(req, res, alumnoId)) return;
 
     const ref = db.collection("fichasMedicas").doc(alumnoId);
     const fichaDoc = await ref.get();
@@ -1056,7 +1183,11 @@ app.post("/api/fichas-medicas/:alumnoId/atenciones", verifyToken, requireRole("a
 // DELETE /api/fichas-medicas/:alumnoId/atenciones/:atencionId
 app.delete("/api/fichas-medicas/:alumnoId/atenciones/:atencionId", verifyToken, requireRole("admin", "docente"), async (req, res) => {
   try {
+    if (!await docenteTieneAccesoFicha(req, res, req.params.alumnoId)) return;
+
     const ref = db.collection("fichasMedicas").doc(req.params.alumnoId);
+    const alumnoDoc = await db.collection("alumnos").doc(req.params.alumnoId).get();
+    if (!alumnoDoc.exists) return fail(res, "Alumno no encontrado", 404);
     const fichaDoc = await ref.get();
     if (!fichaDoc.exists) return fail(res, "Ficha médica no encontrada", 404);
 
@@ -1787,8 +1918,12 @@ app.use((req, res) => fail(res, `Ruta no encontrada: ${req.method} ${req.path}`,
 
 // ─── INICIO ─────────────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
-  console.log(`\n NovaSYS API corriendo en http://localhost:${PORT}`);
-  console.log(` Ciclo lectivo activo: ${CICLO_LECTIVO}`);
-  console.log(" Colecciones: alumnos, docentes, materias, inscripciones, calificaciones, asistencias, notificaciones, fichasMedicas, usuarios, preinscripciones\n");
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n NovaSYS API corriendo en http://localhost:${PORT}`);
+    console.log(` Ciclo lectivo activo: ${CICLO_LECTIVO}`);
+    console.log(" Colecciones: alumnos, docentes, materias, inscripciones, calificaciones, asistencias, notificaciones, fichasMedicas, usuarios, preinscripciones\n");
+  });
+}
+
+module.exports = app;

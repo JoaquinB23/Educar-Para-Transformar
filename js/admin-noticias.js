@@ -53,7 +53,7 @@ function fila(noticia) {
       <td>${estado}</td>
       <td class="text-center">${destacada}</td>
       <td class="text-end text-nowrap">
-        <a class="btn btn-sm btn-outline-primary rounded-pill me-1 js-editar"
+        <a class="btn btn-sm btn-outline-primary rounded-pill me-1 js-ver-publico"
            href="noticias.html" target="_blank" title="Ver en el sitio público">
           <span class="material-symbols-outlined align-middle" style="font-size:16px">visibility</span>
         </a>
