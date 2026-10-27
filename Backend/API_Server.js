@@ -30,6 +30,31 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.get("/js/env.js", (_req, res) => {
+  const config = {
+    FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
+    FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
+    FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+    FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
+    FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
+  };
+  const missing = Object.entries(config)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    return res.status(500).type("text/plain").send(
+      `Faltan variables de entorno de Firebase: ${missing.join(", ")}`
+    );
+  }
+
+  res.set("Cache-Control", "no-store");
+  return res.type("application/javascript").send(
+    `export const env = ${JSON.stringify(config)};`
+  );
+});
+
 // El sitio estático se sirve carpeta por carpeta, cada una en su prefijo. Antes
 // era express.static(path.join(__dirname, '..')) sobre la raíz del repo, que
 // además del sitio publicaba /Backend/API_Server.js y el resto del código del

@@ -2,7 +2,6 @@
 
 # Env — credenciales Firebase y secretos
 .env
-js/env.js
 Backend/.env
 Backend/coverage/
 
