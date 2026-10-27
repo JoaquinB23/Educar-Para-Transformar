@@ -19,7 +19,7 @@
         .badge-admin   { background: #e2e3e5; color: #383d41; }
     </style>
 </head>
-<body>
+<body data-required-roles="admin">
 
 <!-- Las otras páginas de administración usan un sidebar; esta es angosta y
      centrada, así que lleva una barra superior con las mismas secciones para que
@@ -33,7 +33,9 @@
         <ul class="navbar-nav flex-row flex-wrap gap-1">
             <li class="nav-item"><a class="nav-link" href="dashboard.html"><span class="material-symbols-outlined me-1">dashboard</span> Inicio</a></li>
             <li class="nav-item"><a class="nav-link" href="admin-alumnos.html"><span class="material-symbols-outlined me-1">school</span> Alumnos</a></li>
+            <li class="nav-item"><a class="nav-link" href="admin-docentes.html"><span class="material-symbols-outlined me-1">co_present</span> Docentes</a></li>
             <li class="nav-item"><a class="nav-link" href="admin-materias.html"><span class="material-symbols-outlined me-1">menu_book</span> Materias</a></li>
+            <li class="nav-item"><a class="nav-link" href="admin-inscripciones.html"><span class="material-symbols-outlined me-1">assignment</span> Inscripciones</a></li>
             <li class="nav-item"><a class="nav-link active" href="admin-usuarios.html" aria-current="page"><span class="material-symbols-outlined me-1">group</span> Usuarios</a></li>
             <li class="nav-item"><a class="nav-link" href="admin-preinscripciones.html"><span class="material-symbols-outlined me-1">how_to_reg</span> Preinscripciones</a></li>
             <li class="nav-item"><a class="nav-link" href="admin-noticias.html"><span class="material-symbols-outlined me-1">campaign</span> Noticias</a></li>

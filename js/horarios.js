@@ -13,7 +13,6 @@ const DIAS = [
 ];
 
 const usuarioGuardado = JSON.parse(localStorage.getItem("usuario") || "null");
-if (!usuarioGuardado) return; // auth-guard.js ya está redirigiendo
 
 const $grilla = document.getElementById("grillaHorario");
 const $resumen = document.getElementById("resumenHorario");

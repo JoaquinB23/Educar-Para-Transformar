@@ -6,6 +6,13 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 let resolverAuthReady;
 window.authReady = new Promise((resolve) => { resolverAuthReady = resolve; });
 
+const rolesRequeridos = (document.body.dataset.requiredRoles || '')
+  .split(/\s+/)
+  .filter(Boolean);
+if (rolesRequeridos.length > 0) {
+  document.documentElement.style.visibility = 'hidden';
+}
+
 // Redirige al login si Firebase no tiene sesión activa
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -17,6 +24,35 @@ onAuthStateChanged(auth, async (user) => {
   }
   const idToken = await user.getIdToken();
   sessionStorage.setItem('idToken', idToken);
+
+  if (rolesRequeridos.length > 0) {
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || `HTTP ${response.status}`);
+      }
+
+      const rol = String(result.data?.rol || '').toLowerCase();
+      if (!rolesRequeridos.includes(rol)) {
+        let paginaInicial = 'login.html';
+        if (rol === 'admin') paginaInicial = 'dashboard.html';
+        if (rol === 'alumno') paginaInicial = 'dashboard-alumno.html';
+        if (rol === 'docente') paginaInicial = 'dashboard-docente.html';
+        if (rol === 'familia') paginaInicial = 'dashboard-familia.html';
+        window.location.replace(paginaInicial);
+        return;
+      }
+    } catch (error) {
+      console.error('No se pudo validar el acceso a esta página:', error);
+      window.location.replace('login.html');
+      return;
+    }
+  }
+
+  document.documentElement.style.visibility = 'visible';
   resolverAuthReady(user);
 });
 

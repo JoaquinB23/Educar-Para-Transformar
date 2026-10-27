@@ -1,3 +1,6 @@
 allowBuilds:
   '@firebase/util': false
+  '@parcel/watcher': true
+  cypress: true
   protobufjs: false
+  unrs-resolver: true

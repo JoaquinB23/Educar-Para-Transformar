@@ -9,6 +9,8 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     defaults:
       run:
         working-directory: ./Backend
@@ -29,5 +31,28 @@ jobs:
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
 
-      - name: Chequeo de sintaxis del servidor
-        run: node --check API_Server.js
+      - name: Lint
+        run: pnpm lint
+
+      - name: Verificar formato
+        run: pnpm format:check
+
+      - name: Pruebas API y cobertura
+        run: pnpm test:coverage
+
+      - name: Prueba E2E CP-001 (requiere fixture docente configurado)
+        run: pnpm test:e2e
+        env:
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_DOCENTE_DNI: ${{ secrets.CYPRESS_DOCENTE_DNI }}
+          CYPRESS_DOCENTE_PASSWORD: ${{ secrets.CYPRESS_DOCENTE_PASSWORD }}
+          CYPRESS_DOCENTE_NIVEL: ${{ vars.CYPRESS_DOCENTE_NIVEL }}
+          CYPRESS_ALUMNO_ASIGNADO: ${{ vars.CYPRESS_ALUMNO_ASIGNADO }}
+          CYPRESS_ALUMNO_NO_ASIGNADO: ${{ vars.CYPRESS_ALUMNO_NO_ASIGNADO }}
+
+      - name: Análisis SonarCloud
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io

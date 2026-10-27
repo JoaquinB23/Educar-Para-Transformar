@@ -4,8 +4,9 @@
 // POST /api/fichas-medicas/:id/atenciones → suma una atención
 // DELETE /api/fichas-medicas/:id/atenciones/:atencionId
 //
-// Quién puede escribir: sólo admin y docente (lo decide requireRole en el
-// backend). Los alumnos y tutores sólo leen.
+// Admin puede gestionar cualquier ficha. Docentes sólo pueden gestionar
+// fichas de alumnos inscriptos en sus materias del ciclo lectivo actual.
+// Alumnos y tutores vinculados sólo pueden leer.
 
 const ROLES_QUE_ESCRIBEN = ['admin', 'docente'];
 
@@ -34,6 +35,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('btnEditarFicha').classList.toggle('d-none', !puedeEscribir);
     $('btnNuevaAtencion').classList.toggle('d-none', !puedeEscribir);
 
+    // Admin busca cualquier alumno; docentes sólo los de sus materias activas.
+    if (state.perfil.rol === 'admin' || state.perfil.rol === 'docente') {
+        $('txtAlumnoFicha').innerText = 'Seleccioná un alumno en el buscador.';
+        $('panelBuscador').classList.remove('d-none');
+        $('inputBuscarAlumno').placeholder = state.perfil.rol === 'docente'
+            ? 'Buscá entre tus alumnos por nombre, apellido o legajo...'
+            : 'Escribí el nombre, apellido o legajo...';
+        $('inputBuscarAlumno').addEventListener('input', (evento) => {
+            buscarAlumnos(evento).catch(mostrarErrorBuscador);
+        });
+        if (state.perfil.rol === 'docente') {
+            try {
+                await cargarAlumnosBuscables();
+                pintarResultadosAlumno('');
+            } catch (error) {
+                mostrarErrorBuscador(error);
+            }
+        }
+    }
+
     // El alumnoId puede venir por query (?alumnoId=X) o del propio perfil.
     const porQuery = new URLSearchParams(window.location.search).get('alumnoId');
 
@@ -42,22 +63,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         await cargarFicha();
     }
 
-    if (puedeEscribir && state.perfil.rol === 'admin') {
-        $('panelBuscador').classList.remove('d-none');
-        $('inputBuscarAlumno').addEventListener('input', buscarAlumnos);
-    }
-
     // Cada rol entra con su alumno por defecto si no vino por query.
     if (!state.alumnoId) {
         state.alumnoId = alumnoPorDefecto(state.perfil);
         if (state.alumnoId) {
             await cargarFicha();
-        } else {
+        } else if (state.perfil.rol !== 'docente' && state.perfil.rol !== 'admin') {
             $('msgSinVinculo').classList.remove('d-none');
             $('msgSinVinculoDetalle').textContent =
-                state.perfil.rol === 'admin'
-                    ? ' Buscá un alumno en el panel de arriba.'
-                    : ' Tu cuenta no tiene un alumno vinculado. Contactá a administración.';
+                ' Tu cuenta no tiene un alumno vinculado. Contactá a administración.';
         }
     }
 });
@@ -71,37 +85,73 @@ function alumnoPorDefecto(perfil) {
     return null;
 }
 
-// ─── Buscador (admin) ──────────────────────────────────────────────────────
+// ─── Buscador de alumnos autorizados ────────────────────────────────────────
 
 let todosLosAlumnos = null;
+let errorBuscador = '';
 
 // Sin acentos: buscar "garcia" tiene que encontrar a "García".
 const normalizarTexto = (s) =>
     String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
+const ENTIDADES_HTML = new Map([
+    ['&', '&amp;'],
+    ['<', '&lt;'],
+    ['>', '&gt;'],
+    ['"', '&quot;'],
+    ["'", '&#39;'],
+]);
+
+const escaparHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+    ENTIDADES_HTML.get(c));
+
+async function cargarAlumnosBuscables() {
+    if (todosLosAlumnos !== null) return;
+    const url = state.perfil.rol === 'docente' ? '/api/docentes/alumnos' : '/api/alumnos';
+    const resp = await window.fetchConAuth(url);
+    const json = await resp.json().catch(() => null);
+    if (!resp.ok || !json?.ok) {
+        throw new Error(json?.error || 'No se pudo cargar el listado de alumnos.');
+    }
+    todosLosAlumnos = json.data || [];
+}
+
 async function buscarAlumnos(e) {
     const q = normalizarTexto(e.target.value.trim());
+    await cargarAlumnosBuscables();
+    pintarResultadosAlumno(q);
+}
+
+function mostrarErrorBuscador(error) {
+    errorBuscador = error.message || 'No se pudo cargar el listado de alumnos.';
+    $('resultadosAlumno').innerHTML = `<p class="text-danger small mb-0">${escaparHtml(errorBuscador)}</p>`;
+}
+
+function pintarResultadosAlumno(q) {
     const cont = $('resultadosAlumno');
-
-    if (todosLosAlumnos === null) {
-        const resp = await window.fetchConAuth('/api/alumnos');
-        if (!resp.ok) { cont.innerHTML = '<p class="text-danger small mb-0">No se pudo cargar el listado.</p>'; return; }
-        todosLosAlumnos = (await resp.json()).data || [];
-    }
-
-    if (q.length < 2) { cont.innerHTML = ''; return; }
+    errorBuscador = '';
+    const esDocente = state.perfil.rol === 'docente';
+    if (q.length < 2 && !esDocente) { cont.innerHTML = ''; return; }
 
     const filtrados = todosLosAlumnos.filter((a) =>
         normalizarTexto(`${a.nombre} ${a.apellido} ${a.legajo}`).includes(q)
-    ).slice(0, 10);
+    ).slice(0, esDocente ? 100 : 10);
 
-    if (filtrados.length === 0) { cont.innerHTML = '<p class="text-muted small mb-0">Sin resultados.</p>'; return; }
+    if (filtrados.length === 0) {
+        cont.innerHTML = esDocente && todosLosAlumnos.length === 0
+            ? '<p class="text-muted small mb-0">No tenés alumnos inscriptos en tus materias este ciclo. Pedí a administración que revise la asignación del docente y las inscripciones.</p>'
+            : '<p class="text-muted small mb-0">Sin resultados.</p>';
+        return;
+    }
 
     cont.innerHTML = filtrados.map((a) => `
         <button type="button" class="list-group-item list-group-item-action"
-                data-alumno-id="${a.id}">
-            <strong>${a.apellido}, ${a.nombre}</strong>
-            <span class="text-muted small"> · ${a.legajo || 'sin legajo'}</span>
+                data-alumno-id="${escaparHtml(a.id)}">
+            <strong>${escaparHtml(`${a.apellido || ''}, ${a.nombre || ''}`)}</strong>
+            <span class="text-muted small"> · ${escaparHtml(a.legajo || 'sin legajo')}</span>
+            ${esDocente && a.materias?.length
+                ? `<span class="text-muted small d-block">${a.materias.map((materia) => escaparHtml(`${materia.codigo ? `${materia.codigo} — ` : ''}${materia.nombre}`)).join(' · ')}</span>`
+                : ''}
         </button>`).join('');
 
     cont.querySelectorAll('button[data-alumno-id]').forEach((btn) => {
@@ -136,6 +186,7 @@ async function cargarFicha() {
 
         if (!ficha) {
             $('msgSinVinculo').classList.remove('d-none');
+            $('txtEstadoFicha').textContent = 'Ficha médica sin cargar.';
             $('msgSinVinculoDetalle').textContent = ` ${mensaje || 'Podés crearla con el botón Editar.'}`;
             // Si puede escribir, mostramos el formulario igual para que la cree.
             if (ROLES_QUE_ESCRIBEN.includes(state.perfil.rol)) {
