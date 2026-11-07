@@ -8,6 +8,17 @@ const TITULO_PUSH = "Educar para Transformar";
 const TEXTO_PUSH_GENERICO = "Hay una novedad sobre su hijo/a. Abrí la app para verla.";
 const DESTINO_NOTIFICACIONES = "notificaciones";
 const CANAL_ANDROID = "default";
+// Un FCM lento no debe demorar la respuesta al docente: la operación de
+// negocio ya está guardada cuando se llama a enviarPush.
+const TIMEOUT_ENVIO_MS = 4000;
+
+function conTimeout(promesa, ms) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`FCM no respondió en ${ms} ms`)), ms);
+  });
+  return Promise.race([promesa, timeout]).finally(() => clearTimeout(timer));
+}
 
 // El ID del documento es el hash del token: el token no aparece en rutas ni en
 // logs de Firestore, y el upsert reasigna el mismo dispositivo a otro usuario.
@@ -33,15 +44,18 @@ async function enviarPush(usuario, texto) {
     const tokens = await tokensDeUsuario(uid);
     if (tokens.length === 0) return { enviados: 0, motivo: "sin-token" };
 
-    const respuesta = await admin.messaging().sendEachForMulticast({
-      tokens: tokens.map((t) => t.token),
-      notification: { title: TITULO_PUSH, body: texto },
-      data: { destino: DESTINO_NOTIFICACIONES },
-      android: {
-        priority: "high",
-        notification: { channelId: CANAL_ANDROID },
-      },
-    });
+    const respuesta = await conTimeout(
+      admin.messaging().sendEachForMulticast({
+        tokens: tokens.map((t) => t.token),
+        notification: { title: TITULO_PUSH, body: texto },
+        data: { destino: DESTINO_NOTIFICACIONES },
+        android: {
+          priority: "high",
+          notification: { channelId: CANAL_ANDROID },
+        },
+      }),
+      TIMEOUT_ENVIO_MS,
+    );
 
     const invalidos = [];
     (respuesta.responses || []).forEach((r, i) => {
@@ -72,6 +86,7 @@ module.exports = {
   COLECCION_TOKENS,
   DESTINO_NOTIFICACIONES,
   TEXTO_PUSH_GENERICO,
+  TIMEOUT_ENVIO_MS,
   TITULO_PUSH,
   enviarPush,
   hashToken,

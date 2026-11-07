@@ -27,6 +27,9 @@ const ESTADOS_ASISTENCIA = ["presente", "tarde", "ausente"];
 const ESTADOS_CURSADA = ["cursando", "aprobada", "libre", "desercion"];
 const TRIMESTRES = [1, 2, 3];
 const ROLES = ["admin", "alumno", "docente", "familia"];
+// Un token FCM real ronda los 160 caracteres. El tope evita guardar basura
+// enorme en Firestore si llega un body manipulado.
+const MAX_PUSH_TOKEN_LENGTH = 4096;
 // Los únicos niveles educativos del proyecto. Vive acá arriba porque lo usan
 // varias rutas (alumnos y preinscripciones), no en una sola.
 const NIVELES = ["primaria", "secundaria"];
@@ -891,6 +894,9 @@ app.post("/api/asistencias", verifyToken, requireRole("docente", "admin"), async
 // Recorre los registros con estado "ausente", busca al tutor de cada alumno y
 // escribe un documento en `notificaciones`. Si el alumno no tiene tutor
 // vinculado se loguea y se sigue: la asistencia ya quedó guardada igual.
+//
+// Limitación conocida: no deduplica. Si se reenvía la misma asistencia (mismo
+// alumno, materia y fecha), se genera otro aviso y otro push.
 async function avisarAusencias({ guardados, materia, fecha }) {
   const ausentes = guardados.filter((a) => a.estado === "ausente");
   if (ausentes.length === 0) return { generadas: 0, sinTutor: [] };
@@ -988,6 +994,16 @@ app.put("/api/notificaciones/:id/leida", verifyToken, async (req, res) => {
   }
 });
 
+// Valida el token que llega en el body. Devuelve { token } o { error }.
+function leerPushToken(req) {
+  const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
+  if (!token) return { error: "Falta el token" };
+  if (token.length > MAX_PUSH_TOKEN_LENGTH) {
+    return { error: `El token supera el máximo de ${MAX_PUSH_TOKEN_LENGTH} caracteres` };
+  }
+  return { token };
+}
+
 // POST /api/push-token
 // Body: { token, plataforma? }
 // El ID del documento es el hash del token, así que la operación es un upsert:
@@ -995,8 +1011,8 @@ app.put("/api/notificaciones/:id/leida", verifyToken, async (req, res) => {
 // actual. Un token queda asociado a un solo usuario.
 app.post("/api/push-token", verifyToken, async (req, res) => {
   try {
-    const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
-    if (!token) return fail(res, "Falta el token", 400);
+    const { token, error } = leerPushToken(req);
+    if (error) return fail(res, error, 400);
 
     const ref = db.collection(COLECCION_TOKENS).doc(hashToken(token));
     const anterior = await ref.get();
@@ -1021,8 +1037,8 @@ app.post("/api/push-token", verifyToken, async (req, res) => {
 // dejarlo en logs de acceso)
 app.delete("/api/push-token", verifyToken, async (req, res) => {
   try {
-    const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
-    if (!token) return fail(res, "Falta el token", 400);
+    const { token, error } = leerPushToken(req);
+    if (error) return fail(res, error, 400);
 
     const ref = db.collection(COLECCION_TOKENS).doc(hashToken(token));
     const doc = await ref.get();

@@ -2,7 +2,7 @@
 jest.mock('../firebaseAdmin', () => require('./support/firebaseAdminMock'));
 
 const request = require('supertest');
-const { auth, db, pushEnviados } = require('../firebaseAdmin');
+const { auth, db, pushEnviados, tokensInvalidos } = require('../firebaseAdmin');
 const app = require('../API_Server');
 const { hashToken, TEXTO_PUSH_GENERICO } = require('../services/push');
 
@@ -83,6 +83,32 @@ test('POST /api/push-token rechaza un body sin token', async () => {
   expect(respuesta.status).toBe(400);
 });
 
+test('POST /api/push-token rechaza un token que no es string o está vacío', async () => {
+  const sinString = await request(app)
+    .post('/api/push-token')
+    .set('Authorization', `Bearer ${auth.token('tutor-1')}`)
+    .send({ token: 123 });
+
+  expect(sinString.status).toBe(400);
+
+  const vacio = await registrarToken('tutor-1', '   ');
+  expect(vacio.status).toBe(400);
+});
+
+test('POST /api/push-token rechaza un token demasiado largo', async () => {
+  const respuesta = await registrarToken('tutor-1', 'x'.repeat(4097));
+
+  expect(respuesta.status).toBe(400);
+});
+
+test('POST /api/push-token sin Authorization responde 401', async () => {
+  const respuesta = await request(app)
+    .post('/api/push-token')
+    .send({ token: TOKEN_APP });
+
+  expect(respuesta.status).toBe(401);
+});
+
 test('DELETE /api/push-token toma el token del body y sólo borra el propio', async () => {
   await registrarToken('tutor-1');
 
@@ -147,6 +173,42 @@ test('sin token registrado no se envía push pero la notificación queda guardad
   expect(pushEnviados).toHaveLength(0);
   const notificaciones = await db.collection('notificaciones').get();
   expect(notificaciones.size).toBe(1);
+});
+
+test('enviarPush borra el token si FCM lo marca como no registrado', async () => {
+  await registrarToken('tutor-1');
+  tokensInvalidos.set(TOKEN_APP, 'messaging/registration-token-not-registered');
+
+  const respuesta = await request(app)
+    .post('/api/asistencias')
+    .set('Authorization', `Bearer ${auth.token('docente-1')}`)
+    .send({
+      materiaId: 'materia-1',
+      fecha: '2026-11-07',
+      registros: [{ alumnoId: 'alumno-1', estado: 'ausente' }],
+    });
+
+  expect(respuesta.status).toBe(201);
+  const token = await db.collection('pushTokens').doc(hashToken(TOKEN_APP)).get();
+  expect(token.exists).toBe(false);
+});
+
+test('enviarPush conserva el token ante un error transitorio de FCM', async () => {
+  await registrarToken('tutor-1');
+  tokensInvalidos.set(TOKEN_APP, 'messaging/internal-error');
+
+  const respuesta = await request(app)
+    .post('/api/asistencias')
+    .set('Authorization', `Bearer ${auth.token('docente-1')}`)
+    .send({
+      materiaId: 'materia-1',
+      fecha: '2026-11-07',
+      registros: [{ alumnoId: 'alumno-1', estado: 'ausente' }],
+    });
+
+  expect(respuesta.status).toBe(201);
+  const token = await db.collection('pushTokens').doc(hashToken(TOKEN_APP)).get();
+  expect(token.exists).toBe(true);
 });
 
 test('la atención crea la notificación y envía push sin datos clínicos', async () => {
