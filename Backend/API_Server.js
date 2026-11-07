@@ -128,6 +128,24 @@ app.post("/api/auth/sync", verifyToken, async (req, res) => {
     if (req.body.rol !== undefined) {
       return fail(res, "El rol no se puede setear por este endpoint");
     }
+
+    // Sin perfil no hay rol con el que autorizar. Antes se creaba un documento
+    // incompleto y se dejaba pasar cualquier vínculo.
+    if (!req.perfil) {
+      return fail(res, "Perfil no encontrado en Firestore", 403);
+    }
+
+    // Opción A: los vínculos institucionales sólo los setea un admin. El
+    // usuario común únicamente puede editar sus datos básicos.
+    const esAdmin = req.perfil.rol === "admin";
+    const camposVinculo = ["alumnoId", "docenteId", "hijoPrimariaId", "hijoSecundariaId"];
+    const intentaVincular = camposVinculo.some((campo) =>
+      Object.prototype.hasOwnProperty.call(req.body, campo),
+    );
+    if (!esAdmin && intentaVincular) {
+      return fail(res, "Sólo un administrador puede vincular alumnos o docentes", 403);
+    }
+
     if (!alumnoId && !docenteId && !hijoPrimariaId && !hijoSecundariaId
         && !nombre && !apellido && !nivel) {
       return fail(res, "No enviaste ningún campo para vincular");
