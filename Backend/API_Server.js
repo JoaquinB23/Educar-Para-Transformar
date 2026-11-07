@@ -5,6 +5,14 @@ const cors = require("cors");
 const { db, auth } = require("./firebaseAdmin");
 const verifyToken = require("./middleware/verifyToken");
 const requireRole = require("./middleware/requireRole");
+const { buscarTutoresDe } = require("./services/usuarios");
+const { avisarAtencion } = require("./services/avisoAtencion");
+const {
+  COLECCION_TOKENS,
+  TEXTO_PUSH_GENERICO,
+  enviarPush,
+  hashToken,
+} = require("./services/push");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -102,24 +110,7 @@ const sinAcentos = (s) =>
 
 // Firestore no tiene OR, así que para buscar al tutor de un alumno tenemos que
 // preguntar por los dos campos por separado y unir los resultados.
-async function buscarTutoresDe(alumnoId) {
-  const [primaria, secundaria] = await Promise.all([
-    db.collection("usuarios").where("hijoPrimariaId", "==", alumnoId).get(),
-    db.collection("usuarios").where("hijoSecundariaId", "==", alumnoId).get(),
-  ]);
-
-  const vistos = new Set();
-  const tutores = [];
-  for (const snap of [primaria, secundaria]) {
-    for (const doc of snap.docs) {
-      if (vistos.has(doc.id)) continue;
-      vistos.add(doc.id);
-      const d = doc.data();
-      tutores.push({ uid: d.uid || doc.id, nombre: d.nombre || "", email: d.email || null });
-    }
-  }
-  return tutores;
-}
+// La implementación vive en services/usuarios.js para compartirla con los avisos.
 
 // ─── AUTH (Firebase) ────────────────────────────────────────────────────────
 
@@ -906,6 +897,7 @@ async function avisarAusencias({ guardados, materia, fecha }) {
 
   const sinTutor = [];
   const aInsertar = [];
+  const destinatarios = new Set();
 
   for (const asistencia of ausentes) {
     const tutor = await buscarTutoresDe(asistencia.alumnoId);
@@ -917,6 +909,7 @@ async function avisarAusencias({ guardados, materia, fecha }) {
     const alumno = alumnoDoc.exists ? alumnoDoc.data() : {};
 
     for (const t of tutor) {
+      destinatarios.add(t.uid);
       aInsertar.push({
         destinatarioUid: t.uid,
         tipo: "ausencia",
@@ -942,6 +935,12 @@ async function avisarAusencias({ guardados, materia, fecha }) {
   const refs = aInsertar.map((n) => db.collection("notificaciones").doc());
   refs.forEach((ref, i) => batch.set(ref, aInsertar[i]));
   await batch.commit();
+
+  // El push es best-effort: si FCM falla, la asistencia y el aviso en
+  // `notificaciones` ya quedaron guardados.
+  await Promise.allSettled(
+    [...destinatarios].map((uid) => enviarPush(uid, TEXTO_PUSH_GENERICO)),
+  );
 
   return { generadas: aInsertar.length, sinTutor };
 }
@@ -986,6 +985,56 @@ app.put("/api/notificaciones/:id/leida", verifyToken, async (req, res) => {
     ok(res, withId(actualizada));
   } catch (err) {
     fail(res, "Error al actualizar la notificación: " + err.message, 500);
+  }
+});
+
+// POST /api/push-token
+// Body: { token, plataforma? }
+// El ID del documento es el hash del token, así que la operación es un upsert:
+// el mismo celular puede cambiar de cuenta y el token se reasigna al usuario
+// actual. Un token queda asociado a un solo usuario.
+app.post("/api/push-token", verifyToken, async (req, res) => {
+  try {
+    const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
+    if (!token) return fail(res, "Falta el token", 400);
+
+    const ref = db.collection(COLECCION_TOKENS).doc(hashToken(token));
+    const anterior = await ref.get();
+    const reasignado = anterior.exists && anterior.data().uid !== req.user.uid;
+
+    const documento = {
+      token,
+      uid: req.user.uid,
+      plataforma: req.body.plataforma || "android",
+      actualizadoEn: new Date().toISOString(),
+    };
+    await ref.set(documento);
+
+    ok(res, { ...documento, reasignado }, anterior.exists ? 200 : 201);
+  } catch (err) {
+    fail(res, "Error al registrar el token: " + err.message, 500);
+  }
+});
+
+// DELETE /api/push-token
+// Body: { token }  (el token viaja en el body, no en la query, para no
+// dejarlo en logs de acceso)
+app.delete("/api/push-token", verifyToken, async (req, res) => {
+  try {
+    const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
+    if (!token) return fail(res, "Falta el token", 400);
+
+    const ref = db.collection(COLECCION_TOKENS).doc(hashToken(token));
+    const doc = await ref.get();
+    if (!doc.exists) return ok(res, { eliminado: false });
+    if (doc.data().uid !== req.user.uid) {
+      return fail(res, "Ese token no es tuyo", 403);
+    }
+
+    await ref.delete();
+    ok(res, { eliminado: true });
+  } catch (err) {
+    fail(res, "Error al eliminar el token: " + err.message, 500);
   }
 });
 
@@ -1197,6 +1246,17 @@ app.post("/api/fichas-medicas/:alumnoId/atenciones", verifyToken, requireRole("a
         creadoEn: atencion.registradaEn,
         actualizadoEn: atencion.registradaEn,
       });
+    }
+
+    // El aviso al tutor es best-effort: la atención ya quedó guardada en la
+    // ficha, así que un fallo de notificación no cambia la respuesta.
+    try {
+      await avisarAtencion({
+        alumno: { id: alumnoId, ...alumnoDoc.data() },
+        atencion,
+      });
+    } catch (err) {
+      console.warn(`[notificaciones] No se pudo avisar la atención de ${alumnoId}: ${err.message}`);
     }
 
     ok(res, atencion, 201);
