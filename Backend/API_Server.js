@@ -5,6 +5,7 @@ const cors = require("cors");
 const { db, auth } = require("./firebaseAdmin");
 const verifyToken = require("./middleware/verifyToken");
 const requireRole = require("./middleware/requireRole");
+const puedeVerAlumno = require("./middleware/ownership");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -252,6 +253,7 @@ app.get("/api/alumnos", verifyToken, requireRole("admin"), async (req, res) => {
 // familia (para ver a su hijo), así que alcanza con estar autenticado.
 app.get("/api/alumnos/:id", verifyToken, async (req, res) => {
   try {
+    if (!puedeVerAlumno(req.perfil, req.params.id)) return fail(res, "No tenés permisos para ver este alumno", 403);
     const doc = await db.collection("alumnos").doc(req.params.id).get();
     if (!doc.exists) return fail(res, "Alumno no encontrado", 404);
     ok(res, withId(doc));
@@ -547,6 +549,7 @@ app.delete("/api/materias/:id", verifyToken, requireRole("admin"), async (req, r
 
 app.get("/api/inscripciones", verifyToken, async (req, res) => {
   try {
+    if (req.query.alumnoId !== undefined && !puedeVerAlumno(req.perfil, req.query.alumnoId)) return fail(res, "No tenés permisos para ver este alumno", 403);
     const snap = await db.collection("inscripciones").get();
     let resultado = snap.docs.map(withId);
 
@@ -1630,6 +1633,7 @@ function horarioSePisa(a, b) {
 app.get("/api/horarios", verifyToken, async (req, res) => {
   try {
     const { alumnoId, materiaId } = req.query;
+    if (alumnoId !== undefined && !puedeVerAlumno(req.perfil, alumnoId)) return fail(res, "No tenés permisos para ver este alumno", 403);
 
     let materiaIds;
     if (alumnoId) {
