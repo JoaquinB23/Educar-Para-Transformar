@@ -191,7 +191,33 @@ app.post("/api/auth/sync", verifyToken, async (req, res) => {
 app.get("/api/auth/me", verifyToken, async (req, res) => {
   try {
     if (!req.perfil) return fail(res, "Perfil no encontrado en Firestore", 404);
-    ok(res, { ...req.perfil, cicloLectivoActual: CICLO_LECTIVO });
+
+    const respuesta = { ...req.perfil, cicloLectivoActual: CICLO_LECTIVO };
+
+    // Aditivo: la familia recibe los datos básicos de sus hijos vinculados.
+    // Los campos hijoPrimariaId / hijoSecundariaId se mantienen intactos.
+    if (req.perfil.rol === "familia") {
+      const ids = [...new Set(
+        [req.perfil.hijoPrimariaId, req.perfil.hijoSecundariaId].filter(Boolean),
+      )];
+      const docs = await Promise.all(
+        ids.map((id) => db.collection("alumnos").doc(id).get()),
+      );
+      respuesta.hijos = docs
+        .filter((doc) => doc.exists)
+        .map((doc) => {
+          const alumno = doc.data();
+          return {
+            id: doc.id,
+            nombre: alumno.nombre || null,
+            apellido: alumno.apellido || null,
+            nivel: alumno.nivel || null,
+            legajo: alumno.legajo || null,
+          };
+        });
+    }
+
+    ok(res, respuesta);
   } catch (err) {
     fail(res, "Error al leer el perfil: " + err.message, 500);
   }
