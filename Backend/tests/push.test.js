@@ -201,6 +201,53 @@ test('sin token registrado no se envía push pero la notificación queda guardad
   expect(notificaciones.size).toBe(1);
 });
 
+test('la tardanza crea una notificación tipo tardanza y envía push', async () => {
+  await registrarToken('tutor-1');
+
+  const respuesta = await request(app)
+    .post('/api/asistencias')
+    .set('Authorization', `Bearer ${auth.token('docente-1')}`)
+    .send({
+      materiaId: 'materia-1',
+      fecha: '2026-11-07',
+      registros: [{ alumnoId: 'alumno-1', estado: 'tarde' }],
+    });
+
+  expect(respuesta.status).toBe(201);
+  expect(respuesta.body.data.avisos.generadas).toBe(1);
+
+  const notificaciones = await db.collection('notificaciones').get();
+  expect(notificaciones.size).toBe(1);
+  const aviso = notificaciones.docs[0].data();
+  expect(aviso).toMatchObject({
+    destinatarioUid: 'tutor-1',
+    tipo: 'tardanza',
+    alumnoId: 'alumno-1',
+    leida: false,
+  });
+  expect(aviso.titulo).toBe('Ana Asignada llegó tarde');
+  expect(aviso.mensaje).toContain('llegó tarde');
+
+  expect(pushEnviados).toHaveLength(1);
+  expect(pushEnviados[0].notification.body).toBe(TEXTO_PUSH_GENERICO);
+});
+
+test('presente no genera notificación ni push', async () => {
+  const respuesta = await request(app)
+    .post('/api/asistencias')
+    .set('Authorization', `Bearer ${auth.token('docente-1')}`)
+    .send({
+      materiaId: 'materia-1',
+      fecha: '2026-11-07',
+      registros: [{ alumnoId: 'alumno-1', estado: 'presente' }],
+    });
+
+  expect(respuesta.status).toBe(201);
+  expect(respuesta.body.data.avisos.generadas).toBe(0);
+  expect((await db.collection('notificaciones').get()).size).toBe(0);
+  expect(pushEnviados).toHaveLength(0);
+});
+
 test('enviarPush borra el token si FCM lo marca como no registrado', async () => {
   await registrarToken('tutor-1');
   tokensInvalidos.set(TOKEN_APP, 'messaging/registration-token-not-registered');

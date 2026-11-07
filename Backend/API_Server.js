@@ -917,21 +917,23 @@ app.post("/api/asistencias", verifyToken, requireRole("docente", "admin"), async
 
 // ─── AVISO A TUTORES ─────────────────────────────────────────────────────────
 
-// Recorre los registros con estado "ausente", busca al tutor de cada alumno y
-// escribe un documento en `notificaciones`. Si el alumno no tiene tutor
-// vinculado se loguea y se sigue: la asistencia ya quedó guardada igual.
+// Recorre los registros con estado "ausente" o "tarde", busca al tutor de cada
+// alumno y escribe un documento en `notificaciones`. Si el alumno no tiene
+// tutor vinculado se loguea y se sigue: la asistencia ya quedó guardada igual.
 //
 // Limitación conocida: no deduplica. Si se reenvía la misma asistencia (mismo
 // alumno, materia y fecha), se genera otro aviso y otro push.
 async function avisarAusencias({ guardados, materia, fecha }) {
-  const ausentes = guardados.filter((a) => a.estado === "ausente");
-  if (ausentes.length === 0) return { generadas: 0, sinTutor: [] };
+  const avisables = guardados.filter(
+    (a) => a.estado === "ausente" || a.estado === "tarde",
+  );
+  if (avisables.length === 0) return { generadas: 0, sinTutor: [] };
 
   const sinTutor = [];
   const aInsertar = [];
   const destinatarios = new Set();
 
-  for (const asistencia of ausentes) {
+  for (const asistencia of avisables) {
     const tutor = await buscarTutoresDe(asistencia.alumnoId);
     if (tutor.length === 0) {
       sinTutor.push(asistencia.alumnoId);
@@ -939,14 +941,20 @@ async function avisarAusencias({ guardados, materia, fecha }) {
     }
     const alumnoDoc = await db.collection("alumnos").doc(asistencia.alumnoId).get();
     const alumno = alumnoDoc.exists ? alumnoDoc.data() : {};
+    const esTardanza = asistencia.estado === "tarde";
+    const nombreAlumno = `${alumno.nombre || "Alumno"} ${alumno.apellido || ""}`.trim();
 
     for (const t of tutor) {
       destinatarios.add(t.uid);
       aInsertar.push({
         destinatarioUid: t.uid,
-        tipo: "ausencia",
-        titulo: `${alumno.nombre || "Alumno"} ${alumno.apellido || ""} estuvo ausente`.trim(),
-        mensaje: `El alumno fue marcado como ausente el ${fecha} en ${materia.nombre}.`,
+        tipo: esTardanza ? "tardanza" : "ausencia",
+        titulo: esTardanza
+          ? `${nombreAlumno} llegó tarde`
+          : `${nombreAlumno} estuvo ausente`,
+        mensaje: esTardanza
+          ? `El alumno llegó tarde el ${fecha} en ${materia.nombre}.`
+          : `El alumno fue marcado como ausente el ${fecha} en ${materia.nombre}.`,
         alumnoId: asistencia.alumnoId,
         asistenciaId: asistencia.id,
         materiaId: asistencia.materiaId,
