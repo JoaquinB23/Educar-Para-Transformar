@@ -1030,6 +1030,11 @@ function leerPushToken(req) {
   return { token };
 }
 
+// Sólo android/ios. Cualquier otro valor se ignora y queda android.
+function normalizarPlataforma(valor) {
+  return valor === "ios" ? "ios" : "android";
+}
+
 // POST /api/push-token
 // Body: { token, plataforma? }
 // El ID del documento es el hash del token, así que la operación es un upsert:
@@ -1047,7 +1052,7 @@ app.post("/api/push-token", verifyToken, async (req, res) => {
     const documento = {
       token,
       uid: req.user.uid,
-      plataforma: req.body.plataforma || "android",
+      plataforma: normalizarPlataforma(req.body.plataforma),
       actualizadoEn: new Date().toISOString(),
     };
     await ref.set(documento);

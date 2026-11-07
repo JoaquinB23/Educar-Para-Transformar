@@ -63,6 +63,32 @@ test('POST /api/push-token hace upsert con el hash del token como ID', async () 
   expect(guardado.data().uid).toBe('tutor-1');
 });
 
+test('POST /api/push-token normaliza plataforma a android o ios', async () => {
+  const ios = await request(app)
+    .post('/api/push-token')
+    .set('Authorization', `Bearer ${auth.token('tutor-1')}`)
+    .send({ token: 'token-ios', plataforma: 'ios' });
+  expect(ios.body.data.plataforma).toBe('ios');
+
+  const android = await request(app)
+    .post('/api/push-token')
+    .set('Authorization', `Bearer ${auth.token('tutor-1')}`)
+    .send({ token: 'token-android', plataforma: 'android' });
+  expect(android.body.data.plataforma).toBe('android');
+
+  const invalida = await request(app)
+    .post('/api/push-token')
+    .set('Authorization', `Bearer ${auth.token('tutor-1')}`)
+    .send({ token: 'token-web', plataforma: 'web' });
+  expect(invalida.body.data.plataforma).toBe('android');
+
+  const noString = await request(app)
+    .post('/api/push-token')
+    .set('Authorization', `Bearer ${auth.token('tutor-1')}`)
+    .send({ token: 'token-num', plataforma: 123 });
+  expect(noString.body.data.plataforma).toBe('android');
+});
+
 test('POST /api/push-token reasigna el token si lo tenía otra cuenta', async () => {
   await registrarToken('tutor-2');
 
