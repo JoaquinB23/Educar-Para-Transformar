@@ -71,11 +71,19 @@ async function enviarPush(usuario, texto) {
       invalidos.map((id) => db.collection(COLECCION_TOKENS).doc(id).delete()),
     );
 
-    return {
+    const resultado = {
       enviados: respuesta.successCount,
       fallidos: respuesta.failureCount,
       tokensEliminados: invalidos.length,
     };
+
+    if (resultado.enviados > 0) {
+      console.log(
+        `[push] enviados: ${resultado.enviados}, fallidos: ${resultado.fallidos}, tokensEliminados: ${resultado.tokensEliminados} (uid ${uid})`,
+      );
+    }
+
+    return resultado;
   } catch (err) {
     console.warn(`[push] No se pudo enviar a ${uid}: ${err.message}`);
     return { enviados: 0, motivo: "error", error: err.message };
