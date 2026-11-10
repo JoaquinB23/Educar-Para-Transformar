@@ -6,6 +6,7 @@ const { db, auth } = require("./firebaseAdmin");
 const verifyToken = require("./middleware/verifyToken");
 const requireRole = require("./middleware/requireRole");
 const puedeVerAlumno = require("./middleware/ownership");
+const { avisarAtencion } = require("./services/avisoAtencion");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -224,6 +225,175 @@ app.get("/api/dashboard", verifyToken, requireRole("admin"), async (req, res) =>
     });
   } catch (err) {
     fail(res, "Error al cargar el dashboard: " + err.message, 500);
+  }
+});
+
+// ─── CUOTAS Y PAGOS ─────────────────────────────────────────────────────────
+
+const MEDIOS_PAGO = ["transferencia", "deposito", "efectivo", "otro"];
+const ESTADOS_PAGO = ["pendiente", "aprobado", "rechazado"];
+const TIPOS_PAGO = ["completo", "incompleto"];
+const esFechaValida = (fecha) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
+  const parsed = new Date(`${fecha}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === fecha;
+};
+
+// Las familias declaran pagos; la confirmación final queda a cargo de administración.
+app.post("/api/pagos", verifyToken, requireRole("familia"), async (req, res) => {
+  try {
+    const alumnoId = String(req.body.alumnoId || "").trim();
+    const periodo = String(req.body.periodo || "").trim();
+    const fechaPago = String(req.body.fechaPago || "").trim();
+    const monto = Number(req.body.monto);
+    const medioPago = String(req.body.medioPago || "").trim().toLowerCase();
+    const referencia = String(req.body.referencia || "").trim().slice(0, 100);
+    const hijosVinculados = [req.perfil.hijoPrimariaId, req.perfil.hijoSecundariaId].filter(Boolean);
+
+    if (!alumnoId || !periodo || !fechaPago || !Number.isFinite(monto) || monto <= 0 || !medioPago) {
+      return fail(res, "Completá alumno, período, fecha del pago, monto y medio de pago");
+    }
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(periodo)) return fail(res, "El período debe tener formato AAAA-MM");
+    if (!esFechaValida(fechaPago)) return fail(res, "La fecha del pago no es válida");
+    if (monto > 100000000) return fail(res, "El monto supera el máximo permitido");
+    if (!MEDIOS_PAGO.includes(medioPago)) return fail(res, `Medio de pago inválido. Valores permitidos: ${MEDIOS_PAGO.join(", ")}`);
+    if (!hijosVinculados.includes(alumnoId)) return fail(res, "Sólo podés informar pagos de tus hijos vinculados", 403);
+
+    const alumnoDoc = await db.collection("alumnos").doc(alumnoId).get();
+    if (!alumnoDoc.exists) return fail(res, "Alumno no encontrado", 404);
+    const alumno = alumnoDoc.data();
+    const creadoEn = new Date().toISOString();
+    const pago = {
+      alumnoId,
+      alumnoNombre: nombreCompleto(alumno) || "Alumno",
+      familiaUid: req.user.uid,
+      familiaNombre: nombreCompleto(req.perfil),
+      periodo,
+      fechaPago,
+      monto: Math.round(monto * 100) / 100,
+      moneda: "ARS",
+      nivelAlumno: alumno.nivel || null,
+      medioPago,
+      referencia: referencia || null,
+      estado: "pendiente",
+      creadoEn,
+    };
+
+    const ref = await db.collection("pagos").add(pago);
+    ok(res, { id: ref.id, ...pago }, 201);
+  } catch (err) {
+    fail(res, "Error al registrar el pago: " + err.message, 500);
+  }
+});
+
+// Cada familia sólo ve sus propias presentaciones; administración ve todas.
+app.get("/api/pagos", verifyToken, requireRole("admin", "familia"), async (req, res) => {
+  try {
+    let query = db.collection("pagos");
+    if (req.perfil.rol === "familia") query = query.where("familiaUid", "==", req.user.uid);
+
+    const snap = await query.get();
+    const pagos = snap.docs.map(withId).sort((a, b) => String(b.creadoEn).localeCompare(String(a.creadoEn)));
+    ok(res, pagos);
+  } catch (err) {
+    fail(res, "Error al listar pagos: " + err.message, 500);
+  }
+});
+
+app.get("/api/admin/pagos/reportes", verifyToken, requireRole("admin"), async (req, res) => {
+  try {
+    const desde = String(req.query.desde || "");
+    const hasta = String(req.query.hasta || "");
+    if (!esFechaValida(desde) || !esFechaValida(hasta) || desde > hasta) {
+      return fail(res, "Indicá un rango válido con fechas AAAA-MM-DD");
+    }
+
+    const [pagosSnap, alumnosSnap] = await Promise.all([
+      db.collection("pagos").get(),
+      db.collection("alumnos").get(),
+    ]);
+    const alumnos = new Map(alumnosSnap.docs.map((doc) => [doc.id, doc.data()]));
+    const pagos = pagosSnap.docs.map(withId).flatMap((pago) => {
+      if (pago.estado !== "aprobado") return [];
+      const fechaIngreso = pago.fechaPago || String(pago.revisadoEn || "").slice(0, 10);
+      if (!fechaIngreso || fechaIngreso < desde || fechaIngreso > hasta) return [];
+
+      const alumno = alumnos.get(pago.alumnoId) || {};
+      return [{
+        id: pago.id,
+        alumnoId: pago.alumnoId,
+        alumnoNombre: pago.alumnoNombre || nombreCompleto(alumno) || "Alumno",
+        nivelAlumno: pago.nivelAlumno || alumno.nivel || "sin nivel",
+        fechaIngreso,
+        anioPago: fechaIngreso.slice(0, 4),
+        periodo: pago.periodo || null,
+        anioCuota: String(pago.periodo || "").slice(0, 4) || null,
+        monto: Number(pago.monto) || 0,
+        tipoPago: TIPOS_PAGO.includes(pago.tipoPago) ? pago.tipoPago : null,
+      }];
+    });
+
+    const porMes = new Map();
+    let totalCentavos = 0;
+    for (const pago of pagos) {
+      const mes = pago.fechaIngreso.slice(0, 7);
+      const resumen = porMes.get(mes) || { periodo: mes, totalCentavos: 0, cantidad: 0 };
+      const centavos = Math.round(pago.monto * 100);
+      resumen.totalCentavos += centavos;
+      resumen.cantidad += 1;
+      totalCentavos += centavos;
+      porMes.set(mes, resumen);
+    }
+
+    const ordenar = (a, b) => b.fechaIngreso.localeCompare(a.fechaIngreso)
+      || a.alumnoNombre.localeCompare(b.alumnoNombre, "es");
+    ok(res, {
+      desde,
+      hasta,
+      totalIngresos: totalCentavos / 100,
+      ingresosPorMes: [...porMes.values()]
+        .sort((a, b) => a.periodo.localeCompare(b.periodo))
+        .map(({ periodo, totalCentavos: total, cantidad }) => ({ periodo, total: total / 100, cantidad })),
+      pagosCompletos: pagos.filter((pago) => pago.tipoPago === "completo").sort(ordenar),
+      pagosIncompletos: pagos.filter((pago) => pago.tipoPago === "incompleto").sort(ordenar),
+    });
+  } catch (err) {
+    fail(res, "Error al generar reportes de pagos: " + err.message, 500);
+  }
+});
+
+app.put("/api/admin/pagos/:id/estado", verifyToken, requireRole("admin"), async (req, res) => {
+  try {
+    const estado = String(req.body.estado || "").trim().toLowerCase();
+    const tipoPago = String(req.body.tipoPago || "").trim().toLowerCase();
+    if (!ESTADOS_PAGO.slice(1).includes(estado)) {
+      return fail(res, "El estado debe ser aprobado o rechazado");
+    }
+    if (estado === "aprobado" && !TIPOS_PAGO.includes(tipoPago)) {
+      return fail(res, "Al aprobar, indicá si el pago fue completo o incompleto");
+    }
+
+    const ref = db.collection("pagos").doc(req.params.id);
+    const doc = await ref.get();
+    if (!doc.exists) return fail(res, "Pago no encontrado", 404);
+    const pagoExistente = doc.data();
+    if (pagoExistente.estado === "aprobado" && !pagoExistente.tipoPago && estado === "aprobado") {
+      await ref.update({ tipoPago, clasificadoPor: req.user.uid, clasificadoEn: new Date().toISOString() });
+      const clasificado = await ref.get();
+      return ok(res, withId(clasificado));
+    }
+    if (pagoExistente.estado !== "pendiente") return fail(res, "Sólo se pueden revisar pagos pendientes o clasificar pagos aprobados sin tipo", 409);
+
+    await ref.update({
+      estado,
+      tipoPago: estado === "aprobado" ? tipoPago : null,
+      revisadoPor: req.user.uid,
+      revisadoEn: new Date().toISOString(),
+    });
+    const actualizado = await ref.get();
+    ok(res, withId(actualizado));
+  } catch (err) {
+    fail(res, "Error al actualizar el pago: " + err.message, 500);
   }
 });
 
@@ -1202,6 +1372,12 @@ app.post("/api/fichas-medicas/:alumnoId/atenciones", verifyToken, requireRole("a
       });
     }
 
+    try {
+      await avisarAtencion({ alumno: { ...alumnoDoc.data(), id: alumnoId }, atencion });
+    } catch (err) {
+      console.error("Error al crear notificación de atención:", err.message);
+    }
+
     ok(res, atencion, 201);
   } catch (err) {
     fail(res, "Error al registrar la atención: " + err.message, 500);
@@ -1951,7 +2127,7 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`\n NovaSYS API corriendo en http://localhost:${PORT}`);
     console.log(` Ciclo lectivo activo: ${CICLO_LECTIVO}`);
-    console.log(" Colecciones: alumnos, docentes, materias, inscripciones, calificaciones, asistencias, notificaciones, fichasMedicas, usuarios, preinscripciones\n");
+    console.log(" Colecciones: alumnos, docentes, materias, inscripciones, calificaciones, asistencias, notificaciones, fichasMedicas, pagos, usuarios, preinscripciones\n");
   });
 }
 

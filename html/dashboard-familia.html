@@ -65,14 +65,61 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
+
+                <section class="mt-5" aria-labelledby="tituloPagosFamilia">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 id="tituloPagosFamilia" class="h5 fw-bold mb-1">Cuotas y pagos</h2>
+                            <p class="text-muted small mb-0">Informá un pago para que administración lo revise.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-5">
+                            <form id="formPagoFamilia" class="card card-dash p-4 bg-white border-0 shadow-sm">
+                                <label for="pagoAlumno" class="form-label fw-semibold">Alumno</label>
+                                <select id="pagoAlumno" class="form-select mb-3" required>
+                                    <option value="">Cargando hijos...</option>
+                                </select>
+                                <label for="pagoPeriodo" class="form-label fw-semibold">Período</label>
+                                <input id="pagoPeriodo" type="month" class="form-control mb-3" required>
+                                <label for="pagoFecha" class="form-label fw-semibold">Fecha del pago</label>
+                                <input id="pagoFecha" type="date" class="form-control mb-3" required>
+                                <label for="pagoMonto" class="form-label fw-semibold">Monto abonado (ARS)</label>
+                                <input id="pagoMonto" type="number" class="form-control mb-3" min="0.01" max="100000000" step="0.01" required>
+                                <label for="pagoMedio" class="form-label fw-semibold">Medio de pago</label>
+                                <select id="pagoMedio" class="form-select mb-3" required>
+                                    <option value="transferencia">Transferencia</option>
+                                    <option value="deposito">Depósito</option>
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                                <label for="pagoReferencia" class="form-label fw-semibold">Referencia o comprobante (opcional)</label>
+                                <input id="pagoReferencia" type="text" class="form-control mb-3" maxlength="100">
+                                <button id="btnEnviarPago" type="submit" class="btn btn-primary">Informar pago</button>
+                                <p id="estadoPagoFamilia" class="small mt-3 mb-0" role="status"></p>
+                            </form>
+                        </div>
+                        <div class="col-lg-7">
+                            <div class="card card-dash p-4 bg-white border-0 shadow-sm h-100">
+                                <h3 class="h6 fw-bold mb-3">Mis pagos informados</h3>
+                                <div class="table-responsive">
+                                    <table class="table align-middle mb-0">
+                                        <thead><tr><th>Período</th><th>Alumno</th><th>Monto</th><th>Estado</th></tr></thead>
+                                        <tbody id="tablaPagosFamilia"><tr><td colspan="4" class="text-muted">Cargando pagos...</td></tr></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
 </div>
 
 <script type="module" src="../js/auth-guard.js"></script>
+<script src="../js/pagos-familia.js"></script>
 <script src="../js/notificaciones.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>

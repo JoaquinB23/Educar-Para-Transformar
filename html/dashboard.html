@@ -26,6 +26,7 @@
                     <li class="nav-item"><a class="nav-link" href="admin-docentes.html"><span class="material-symbols-outlined me-2">co_present</span> Docentes</a></li>
                     <li class="nav-item"><a class="nav-link" href="admin-materias.html"><span class="material-symbols-outlined me-2">menu_book</span> Materias</a></li>
                     <li class="nav-item"><a class="nav-link" href="admin-inscripciones.html"><span class="material-symbols-outlined me-2">assignment</span> Inscripciones</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pagosAdmin"><span class="material-symbols-outlined me-2">payments</span> Cuotas y Pagos</a></li>
                     <li class="nav-item"><a class="nav-link" href="admin-usuarios.html"><span class="material-symbols-outlined me-2">manage_accounts</span> Usuarios</a></li>
                     <li class="nav-item"><a class="nav-link" href="admin-preinscripciones.html"><span class="material-symbols-outlined me-2">how_to_reg</span> Preinscripciones</a></li>
                     <li class="nav-item"><a class="nav-link" href="admin-noticias.html"><span class="material-symbols-outlined me-2">campaign</span> Noticias</a></li>
@@ -128,6 +129,73 @@
                         </div>
                     </div>
                 </section>
+
+                <section id="pagosAdmin" class="mt-5" aria-labelledby="tituloPagosAdmin">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div>
+                            <h2 id="tituloPagosAdmin" class="h5 fw-bold mb-1">Cuotas y pagos informados</h2>
+                            <p class="text-muted small mb-0">Los pagos pendientes requieren validación administrativa.</p>
+                        </div>
+                        <button id="btnRefrescarPagos" class="btn btn-outline-primary btn-sm">Actualizar pagos</button>
+                    </div>
+                    <div class="card card-dash p-3 p-md-4 bg-white border-0 shadow-sm">
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead><tr><th>Período</th><th>Fecha</th><th>Alumno</th><th>Familia</th><th>Monto</th><th>Medio</th><th>Estado</th><th>Acción</th></tr></thead>
+                                <tbody id="tablaPagosAdmin"><tr><td colspan="8" class="text-muted">Cargando pagos...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <p id="estadoPagosAdmin" class="small text-muted mt-2" role="status"></p>
+                </section>
+
+                <section id="reportesPagos" class="mt-5" aria-labelledby="tituloReportesPagos">
+                    <h2 id="tituloReportesPagos" class="h5 fw-bold mb-3">Reportes de ingresos y pagos</h2>
+                    <form id="filtrosReportePagos" class="row g-2 align-items-end mb-3">
+                        <div class="col-sm-4 col-md-3">
+                            <label for="reporteDesde" class="form-label small fw-semibold">Desde</label>
+                            <input id="reporteDesde" type="date" class="form-control" required>
+                        </div>
+                        <div class="col-sm-4 col-md-3">
+                            <label for="reporteHasta" class="form-label small fw-semibold">Hasta</label>
+                            <input id="reporteHasta" type="date" class="form-control" required>
+                        </div>
+                        <div class="col-sm-4 col-md-3">
+                            <button class="btn btn-primary" type="submit">Generar reporte</button>
+                        </div>
+                    </form>
+                    <p id="estadoReportePagos" class="small text-muted" role="status"></p>
+                    <p id="totalReporteIngresos" class="h6 fw-bold"></p>
+                    <div class="row g-4">
+                        <div class="col-lg-5">
+                            <div class="card card-dash p-3 bg-white border-0 shadow-sm h-100">
+                                <h3 class="h6 fw-bold">Ingresos por mes de pago</h3>
+                                <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+                                    <thead><tr><th>Mes</th><th>Pagos</th><th>Total</th></tr></thead>
+                                    <tbody id="tablaIngresosPorMes"><tr><td colspan="3" class="text-muted">Sin datos</td></tr></tbody>
+                                </table></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-7">
+                            <div class="card card-dash p-3 bg-white border-0 shadow-sm h-100">
+                                <h3 class="h6 fw-bold">Pagos completos</h3>
+                                <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+                                    <thead><tr><th>Fecha</th><th>Alumno / nivel</th><th>Año pago</th><th>Año cuota</th><th>Monto</th></tr></thead>
+                                    <tbody id="tablaPagosCompletos"><tr><td colspan="5" class="text-muted">Sin datos</td></tr></tbody>
+                                </table></div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card card-dash p-3 bg-white border-0 shadow-sm">
+                                <h3 class="h6 fw-bold">Pagos incompletos</h3>
+                                <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+                                    <thead><tr><th>Fecha</th><th>Alumno / nivel</th><th>Año pago</th><th>Año cuota</th><th>Monto</th></tr></thead>
+                                    <tbody id="tablaPagosIncompletos"><tr><td colspan="5" class="text-muted">Sin datos</td></tr></tbody>
+                                </table></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
@@ -203,6 +271,96 @@
         $('estadoCargaAdmin').className = `small mb-0 ${clase}`;
     }
 
+    const escaparHTML = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caracter) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[caracter]);
+
+    async function cargarPagosAdmin() {
+        const tabla = $('tablaPagosAdmin');
+        try {
+            const respuesta = await window.fetchConAuth('/api/pagos');
+            const json = await respuesta.json();
+            if (!respuesta.ok || !json.ok) throw new Error(json.error || 'No se pudieron cargar los pagos.');
+            const pagos = json.data;
+            if (pagos.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="8" class="text-muted">Todavía no hay pagos informados.</td></tr>';
+                return;
+            }
+            tabla.innerHTML = pagos.map((pago) => `
+                <tr>
+                    <td>${escaparHTML(pago.periodo)}</td>
+                    <td>${escaparHTML(pago.fechaPago || '—')}</td>
+                    <td>${escaparHTML(pago.alumnoNombre)}</td>
+                    <td>${escaparHTML(pago.familiaNombre || 'Sin nombre')}</td>
+                    <td>${new Intl.NumberFormat('es-AR', { style: 'currency', currency: pago.moneda || 'ARS' }).format(pago.monto)}</td>
+                    <td>${escaparHTML(pago.medioPago)}</td>
+                    <td><span class="badge ${pago.estado === 'pendiente' ? 'text-bg-warning' : pago.estado === 'aprobado' ? 'text-bg-success' : 'text-bg-danger'}">${escaparHTML(pago.estado)}${pago.tipoPago ? ` · ${escaparHTML(pago.tipoPago)}` : ''}</span>${pago.referencia ? `<div class="small text-muted">${escaparHTML(pago.referencia)}</div>` : ''}</td>
+                    <td>${pago.estado === 'pendiente' ? `<button class="btn btn-sm btn-success me-1 mb-1" data-pago-estado="aprobado" data-pago-tipo="completo" data-pago-id="${escaparHTML(pago.id)}">Completo</button><button class="btn btn-sm btn-outline-success me-1 mb-1" data-pago-estado="aprobado" data-pago-tipo="incompleto" data-pago-id="${escaparHTML(pago.id)}">Parcial</button><button class="btn btn-sm btn-outline-danger mb-1" data-pago-estado="rechazado" data-pago-id="${escaparHTML(pago.id)}">Rechazar</button>` : pago.estado === 'aprobado' && !pago.tipoPago ? `<button class="btn btn-sm btn-outline-success me-1 mb-1" data-pago-estado="aprobado" data-pago-tipo="completo" data-pago-id="${escaparHTML(pago.id)}">Clasificar completo</button><button class="btn btn-sm btn-outline-success mb-1" data-pago-estado="aprobado" data-pago-tipo="incompleto" data-pago-id="${escaparHTML(pago.id)}">Clasificar parcial</button>` : '—'}</td>
+                </tr>`).join('');
+        } catch (err) {
+            console.error(err);
+            tabla.innerHTML = '<tr><td colspan="8" class="text-danger">No se pudieron cargar los pagos.</td></tr>';
+        }
+    }
+
+    function formatoMoneda(monto) {
+        return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(monto);
+    }
+
+    function filasReporte(pagos) {
+        if (pagos.length === 0) return '<tr><td colspan="5" class="text-muted">Sin pagos en el período.</td></tr>';
+        return pagos.map((pago) => `<tr>
+            <td>${escaparHTML(pago.fechaIngreso)}</td>
+            <td>${escaparHTML(pago.alumnoNombre)} <span class="text-muted">(${escaparHTML(pago.nivelAlumno)})</span></td>
+            <td>${escaparHTML(pago.anioPago)}</td>
+            <td>${escaparHTML(pago.anioCuota || '—')}</td>
+            <td>${formatoMoneda(pago.monto)}</td>
+        </tr>`).join('');
+    }
+
+    async function cargarReportePagos() {
+        const estado = $('estadoReportePagos');
+        estado.textContent = 'Generando reporte...';
+        try {
+            const query = new URLSearchParams({ desde: $('reporteDesde').value, hasta: $('reporteHasta').value });
+            const respuesta = await window.fetchConAuth(`/api/admin/pagos/reportes?${query}`);
+            const json = await respuesta.json();
+            if (!respuesta.ok || !json.ok) throw new Error(json.error || 'No se pudo generar el reporte.');
+
+            $('totalReporteIngresos').textContent = `Ingresos confirmados: ${formatoMoneda(json.data.totalIngresos)}`;
+            $('tablaIngresosPorMes').innerHTML = json.data.ingresosPorMes.length
+                ? json.data.ingresosPorMes.map((item) => `<tr><td>${escaparHTML(item.periodo)}</td><td>${item.cantidad}</td><td>${formatoMoneda(item.total)}</td></tr>`).join('')
+                : '<tr><td colspan="3" class="text-muted">Sin ingresos en el período.</td></tr>';
+            $('tablaPagosCompletos').innerHTML = filasReporte(json.data.pagosCompletos);
+            $('tablaPagosIncompletos').innerHTML = filasReporte(json.data.pagosIncompletos);
+            estado.textContent = `Período ${json.data.desde} a ${json.data.hasta}. La fecha corresponde al pago informado y aprobado.`;
+            estado.className = 'small text-muted';
+        } catch (err) {
+            estado.textContent = err.message;
+            estado.className = 'small text-danger';
+        }
+    }
+
+    async function revisarPago(id, estado, tipoPago) {
+        const estadoPagos = $('estadoPagosAdmin');
+        estadoPagos.textContent = 'Guardando revisión...';
+        try {
+            const respuesta = await window.fetchConAuth(`/api/admin/pagos/${encodeURIComponent(id)}/estado`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado, tipoPago }),
+            });
+            const json = await respuesta.json();
+            if (!respuesta.ok || !json.ok) throw new Error(json.error || 'No se pudo revisar el pago.');
+            estadoPagos.textContent = `Pago ${estado}.`;
+            await cargarPagosAdmin();
+            await cargarReportePagos();
+        } catch (err) {
+            estadoPagos.textContent = err.message;
+            estadoPagos.className = 'small text-danger mt-2';
+        }
+    }
+
     // El buscador de la barra superior es el mismo listado de alumnos: antes
     // era un input sin handler, Dead UI. Ahora lleva al listado con la búsqueda
     // ya cargada.
@@ -237,6 +395,7 @@
 
             pintarKPIs(json.data);
             pintarDistribuciones();
+            await cargarPagosAdmin();
             avisar(`Actualizado ${new Date().toLocaleTimeString('es-AR')}`, 'text-success');
         } catch (err) {
             console.error(err);
@@ -248,7 +407,21 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         $('btnRefrescarAdmin').addEventListener('click', cargarDashboard);
+        $('btnRefrescarPagos').addEventListener('click', cargarPagosAdmin);
+        $('filtrosReportePagos').addEventListener('submit', (evento) => {
+            evento.preventDefault();
+            cargarReportePagos();
+        });
+        $('tablaPagosAdmin').addEventListener('click', (evento) => {
+            const boton = evento.target.closest('[data-pago-estado]');
+            if (boton) revisarPago(boton.dataset.pagoId, boton.dataset.pagoEstado, boton.dataset.pagoTipo);
+        });
+        const hoy = new Date();
+        const fechaHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+        $('reporteDesde').value = `${hoy.getFullYear()}-01-01`;
+        $('reporteHasta').value = fechaHoy;
         cargarDashboard();
+        cargarReportePagos();
     });
 </script>
 
